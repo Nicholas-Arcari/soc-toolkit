@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "soc-toolkit"
+version = "0.1.0"
+description = "Modular SOC analyst toolkit - Phishing Analyzer, Log Analyzer, IOC Extractor"
+authors = ["Nicholas Arcari <arcari.nicholas0@gmail.com>"]
+license = "MIT"
+readme = "../README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.0"
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+pydantic = "^2.10.0"
+pydantic-settings = "^2.7.0"
+sqlalchemy = "^2.0.0"
+aiosqlite = "^0.20.0"
+httpx = "^0.28.0"
+python-multipart = "^0.0.18"
+weasyprint = "^63.0"
+jinja2 = "^3.1.0"
+python-dotenv = "^1.0.0"
+
+# Email parsing
+mail-parser = "^3.15.0"
+
+# IOC extraction
+ioc-finder = "^7.3.0"
+
+# PDF text extraction
+pymupdf = "^1.25.0"
+
+# GeoIP lookup
+geoip2 = "^4.8.0"
+
+# CLI
+typer = "^0.15.0"
+rich = "^13.9.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+ruff = "^0.8.0"
+mypy = "^1.13.0"
+httpx = "^0.28.0"
+
+[tool.poetry.scripts]
+soc-toolkit = "cli:app"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["../tests"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
