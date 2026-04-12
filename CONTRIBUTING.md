@@ -5,7 +5,7 @@ Contributions are welcome. This guide covers how to get started.
 ## Getting Started
 
 1. Fork the repository
-2. Clone your fork: `git clone https://github.com/Nicholas-Arcari/soc-toolkit.git`
+2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/soc-toolkit.git`
 3. Create a feature branch: `git checkout -b feature/your-feature`
 4. Follow the [Setup Guide](docs/SETUP.md) to configure your environment
 
