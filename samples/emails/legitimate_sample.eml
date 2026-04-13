@@ -1,0 +1,26 @@
+From: John Smith <john.smith@company.com>
+To: security-team@company.com
+Subject: Weekly security review meeting notes
+Date: Fri, 10 Apr 2026 14:00:00 +0000
+Return-Path: <john.smith@company.com>
+Message-ID: <msg456@company.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Authentication-Results: mx.company.com; spf=pass; dkim=pass; dmarc=pass
+Received: from mail.company.com [10.0.1.5]
+  by mx.company.com with ESMTP; Fri, 10 Apr 2026 14:00:00 +0000
+
+Hi team,
+
+Here are the notes from today's weekly security review:
+
+1. Patch Tuesday updates applied to all production servers
+2. New Suricata rules deployed for CVE-2026-1234
+3. Wazuh agent rollout: 85% coverage achieved
+4. Next week: tabletop exercise for ransomware scenario
+
+Please review and add anything I missed.
+
+Thanks,
+John
+Security Operations Team
