@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Body, File, UploadFile
 from pydantic import BaseModel
 
-from core.ioc.pdf_extractor import extract_from_pdf
-from core.ioc.text_extractor import extract_from_text
 from core.ioc.email_extractor import extract_from_email
 from core.ioc.ioc_validator import validate_and_enrich
+from core.ioc.pdf_extractor import extract_from_pdf
+from core.ioc.text_extractor import extract_from_text
 
 router = APIRouter()
 
