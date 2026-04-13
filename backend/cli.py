@@ -5,14 +5,14 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
-from core.phishing.header_analyzer import analyze_headers
-from core.phishing.url_checker import check_urls
-from core.phishing.attachment_scanner import scan_attachment
-from core.phishing.verdict_engine import generate_verdict
+from core.ioc.pdf_extractor import extract_from_pdf
+from core.ioc.text_extractor import extract_from_text
 from core.logs.ssh_analyzer import analyze_ssh_logs
 from core.logs.web_analyzer import analyze_web_logs
-from core.ioc.text_extractor import extract_from_text
-from core.ioc.pdf_extractor import extract_from_pdf
+from core.phishing.attachment_scanner import scan_attachment
+from core.phishing.header_analyzer import analyze_headers
+from core.phishing.url_checker import check_urls
+from core.phishing.verdict_engine import generate_verdict
 
 app = typer.Typer(
     name="soc-toolkit",
