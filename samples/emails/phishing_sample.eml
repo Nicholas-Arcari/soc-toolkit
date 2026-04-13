@@ -1,0 +1,51 @@
+From: "Microsoft Account Team" <no-reply@micros0ft-verify.com>
+To: user@example.com
+Subject: Action Required: Unusual sign-in activity on your account
+Date: Fri, 10 Apr 2026 09:30:00 +0000
+Return-Path: <bounce@micros0ft-verify.com>
+Reply-To: support@micros0ft-verify.com
+Message-ID: <fake123@micros0ft-verify.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="boundary123"
+Authentication-Results: mx.example.com; spf=softfail; dkim=fail; dmarc=fail
+Received: from mail.micros0ft-verify.com [203.0.113.66]
+  by mx.example.com with ESMTP; Fri, 10 Apr 2026 09:30:00 +0000
+
+--boundary123
+Content-Type: text/html; charset="utf-8"
+
+<html>
+<body style="font-family: Segoe UI, sans-serif;">
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+<img src="https://micros0ft-verify.com/logo.png" width="108" />
+<h2>Unusual sign-in activity</h2>
+<p>We detected something unusual about a recent sign-in to your Microsoft account.</p>
+<table>
+<tr><td><b>Country/region:</b></td><td>Russia</td></tr>
+<tr><td><b>IP address:</b></td><td>185.220.101.42</td></tr>
+<tr><td><b>Date:</b></td><td>04/10/2026 08:15 AM (UTC)</td></tr>
+<tr><td><b>Platform:</b></td><td>Linux</td></tr>
+<tr><td><b>Browser:</b></td><td>Firefox</td></tr>
+</table>
+<p>If this was you, you can ignore this message.</p>
+<p>If this wasn't you, please secure your account:</p>
+<a href="https://micros0ft-verify.com/account/security?token=abc123def456"
+   style="background: #0078d4; color: white; padding: 12px 24px; text-decoration: none;">
+   Review recent activity
+</a>
+<p style="font-size: 11px; color: #666; margin-top: 20px;">
+Microsoft Corporation, One Microsoft Way, Redmond, WA 98052
+</p>
+</div>
+</body>
+</html>
+
+--boundary123
+Content-Type: application/pdf; name="security_alert.pdf"
+Content-Disposition: attachment; filename="security_alert.pdf.exe"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKMSAwIG9iago8PAovVHlwZSAvQ2F0YWxvZwovUGFnZXMgMiAwIFIKPj4KZW5k
+b2JqCjIgMCBvYmoKPDwKL1R5cGUgL1BhZ2VzCi9LaWRzIFszIDAgUl0KL0NvdW50IDEKL01l
+
+--boundary123--
