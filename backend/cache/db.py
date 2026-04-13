@@ -3,7 +3,7 @@ import json
 import time
 
 from sqlalchemy import Column, Float, Integer, String, Text, create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from config import settings
 
