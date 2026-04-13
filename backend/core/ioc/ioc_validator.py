@@ -1,6 +1,6 @@
-from integrations.virustotal import VirusTotalClient
 from integrations.abuseipdb import AbuseIPDBClient
 from integrations.alienvault_otx import AlienVaultOTXClient
+from integrations.virustotal import VirusTotalClient
 
 
 async def validate_and_enrich(raw_iocs: list[dict]) -> list[dict]:
