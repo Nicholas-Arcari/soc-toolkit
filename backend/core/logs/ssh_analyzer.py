@@ -1,6 +1,5 @@
 import re
 from collections import Counter
-from datetime import datetime
 
 
 def analyze_ssh_logs(raw_logs: str) -> dict:
