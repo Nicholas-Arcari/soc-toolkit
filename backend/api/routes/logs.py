@@ -1,10 +1,10 @@
 from fastapi import APIRouter, File, UploadFile
 from pydantic import BaseModel
 
+from core.logs.alert_engine import generate_alerts
 from core.logs.ssh_analyzer import analyze_ssh_logs
 from core.logs.web_analyzer import analyze_web_logs
 from core.logs.windows_analyzer import analyze_windows_logs
-from core.logs.alert_engine import generate_alerts
 
 router = APIRouter()
 
