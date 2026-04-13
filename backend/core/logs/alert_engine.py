@@ -1,12 +1,10 @@
 from integrations.abuseipdb import AbuseIPDBClient
-from integrations.virustotal import VirusTotalClient
 
 
 async def generate_alerts(analysis: dict) -> list[dict]:
     """Generate alerts with threat intelligence enrichment."""
     alerts = []
     abuseipdb = AbuseIPDBClient()
-    vt = VirusTotalClient()
 
     # Alert on brute force IPs
     for ip_info in analysis.get("top_ips", []):
