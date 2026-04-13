@@ -2,8 +2,8 @@ import email
 import hashlib
 from email import policy
 
-from integrations.virustotal import VirusTotalClient
 from integrations.malwarebazaar import MalwareBazaarClient
+from integrations.virustotal import VirusTotalClient
 
 
 async def scan_attachment(raw_email: str) -> list[dict]:
