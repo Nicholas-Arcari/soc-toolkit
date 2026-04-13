@@ -1,0 +1,43 @@
+THREAT INTELLIGENCE REPORT
+Campaign: SILENT COBRA
+Date: April 2026
+
+EXECUTIVE SUMMARY
+A new campaign attributed to APT group SILENT COBRA has been observed targeting
+financial institutions across Europe. The campaign uses spear-phishing emails
+with weaponized PDF attachments to deliver a custom RAT.
+
+INDICATORS OF COMPROMISE
+
+C2 Infrastructure:
+- 203.0.113.42 (Primary C2 - Netherlands)
+- 198.51.100.7 (Backup C2 - Romania)
+- 185.220.101.42 (Staging server - Germany)
+- c2-primary.malware-infra.xyz
+- backup.evil-domain.top
+- https://cdn.malware-delivery.tk/stage2.bin
+
+Malware Hashes:
+- SHA256: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2 (Dropper)
+- SHA256: 1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef (RAT payload)
+- MD5: d41d8cd98f00b204e9800998ecf8427e (Decoy document)
+
+Phishing Sender:
+- invoice@secure-payment-portal.com
+- notification@bank-update-service.com
+
+Exploited Vulnerabilities:
+- CVE-2024-1234 (Microsoft Office RCE)
+- CVE-2023-5678 (Windows Kernel EoP)
+
+MITRE ATT&CK MAPPING
+- T1566.001 - Spear-Phishing Attachment
+- T1059.001 - PowerShell
+- T1071.001 - Web Protocols
+- T1041 - Exfiltration Over C2 Channel
+
+RECOMMENDATIONS
+1. Block all listed IOCs at network perimeter
+2. Deploy Yara rules for malware signatures
+3. Monitor for DNS queries to listed domains
+4. Apply patches for CVE-2024-1234 and CVE-2023-5678
