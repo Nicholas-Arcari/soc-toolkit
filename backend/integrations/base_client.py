@@ -3,8 +3,6 @@ import time
 
 import httpx
 
-from config import settings
-
 
 class RateLimiter:
     """Token-bucket rate limiter for external API calls.
