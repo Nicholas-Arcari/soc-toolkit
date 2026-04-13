@@ -1,5 +1,5 @@
 import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from jinja2 import Template
 from weasyprint import HTML
@@ -13,7 +13,10 @@ PDF_TEMPLATE = """
     h1 { color: #0d47a1; border-bottom: 3px solid #0d47a1; padding-bottom: 10px; }
     h2 { color: #1565c0; margin-top: 30px; }
     .header { display: flex; justify-content: space-between; align-items: center; }
-    .badge { padding: 4px 12px; border-radius: 4px; color: white; font-weight: bold; font-size: 12px; }
+    .badge {
+        padding: 4px 12px; border-radius: 4px; color: white;
+        font-weight: bold; font-size: 12px;
+    }
     .critical { background: #b71c1c; }
     .high { background: #e65100; }
     .medium { background: #f57f17; }
@@ -23,11 +26,17 @@ PDF_TEMPLATE = """
     th { background: #e3f2fd; padding: 10px; text-align: left; border: 1px solid #bbdefb; }
     td { padding: 8px 10px; border: 1px solid #e0e0e0; }
     tr:nth-child(even) { background: #fafafa; }
-    .verdict { font-size: 24px; font-weight: bold; padding: 15px; text-align: center; border-radius: 8px; }
+    .verdict {
+        font-size: 24px; font-weight: bold; padding: 15px;
+        text-align: center; border-radius: 8px;
+    }
     .verdict-malicious { background: #ffcdd2; color: #b71c1c; }
     .verdict-suspicious { background: #fff3e0; color: #e65100; }
     .verdict-clean { background: #e8f5e9; color: #1b5e20; }
-    .footer { margin-top: 40px; padding-top: 15px; border-top: 1px solid #ccc; font-size: 11px; color: #666; }
+    .footer {
+        margin-top: 40px; padding-top: 15px;
+        border-top: 1px solid #ccc; font-size: 11px; color: #666;
+    }
     .summary { background: #f5f5f5; padding: 15px; border-radius: 8px; margin: 15px 0; }
 </style>
 </head>
@@ -38,7 +47,10 @@ PDF_TEMPLATE = """
     <p><strong>Generated:</strong> {{ timestamp }}</p>
 
     {% if report_type == 'phishing' %}
-        <div class="verdict verdict-{{ data.verdict | lower if data.verdict in ['malicious', 'suspicious', 'clean'] else 'suspicious' }}">
+        {% set verdict_class = data.verdict | lower
+            if data.verdict in ['malicious', 'suspicious', 'clean']
+            else 'suspicious' %}
+        <div class="verdict verdict-{{ verdict_class }}">
             Verdict: {{ data.verdict }} (Risk Score: {{ data.risk_score }}/100)
         </div>
 
@@ -64,7 +76,8 @@ PDF_TEMPLATE = """
             <tr><th>Severity</th><th>Message</th><th>Source IP</th><th>MITRE</th></tr>
             {% for alert in data.get('alerts', []) %}
             <tr>
-                <td><span class="badge {{ alert.severity }}">{{ alert.severity | upper }}</span></td>
+                <td><span class="badge {{ alert.severity }}">
+                    {{ alert.severity | upper }}</span></td>
                 <td>{{ alert.message }}</td>
                 <td>{{ alert.source_ip or 'N/A' }}</td>
                 <td>{{ alert.mitre_technique or '' }}</td>
@@ -82,7 +95,9 @@ PDF_TEMPLATE = """
             <tr>
                 <td>{{ ioc.type | upper }}</td>
                 <td style="font-family: monospace;">{{ ioc.value }}</td>
-                <td>{{ 'Yes' if ioc.malicious else 'No' if ioc.malicious == false else 'Unknown' }}</td>
+                <td>
+                    {{ 'Yes' if ioc.malicious else 'No' if ioc.malicious == false else 'Unknown' }}
+                </td>
             </tr>
             {% endfor %}
         </table>
@@ -102,7 +117,7 @@ async def export_pdf(data: dict, report_type: str) -> io.BytesIO:
     html_content = template.render(
         report_type=report_type,
         data=data,
-        timestamp=datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
+        timestamp=datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S UTC"),
     )
 
     pdf_bytes = HTML(string=html_content).write_pdf()
