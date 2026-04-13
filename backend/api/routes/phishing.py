@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Body, File, UploadFile
 from pydantic import BaseModel
 
+from core.phishing.attachment_scanner import scan_attachment
 from core.phishing.header_analyzer import analyze_headers
 from core.phishing.url_checker import check_urls
-from core.phishing.attachment_scanner import scan_attachment
 from core.phishing.verdict_engine import generate_verdict
 
 router = APIRouter()
