@@ -1,7 +1,6 @@
-import re
 import json
+import re
 from collections import Counter
-
 
 # Critical Windows Security Event IDs mapped to severity levels.
 # These are the events every SOC analyst should monitor - they cover
