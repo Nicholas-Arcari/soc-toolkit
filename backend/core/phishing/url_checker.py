@@ -1,8 +1,8 @@
 import re
 from urllib.parse import urlparse
 
-from integrations.virustotal import VirusTotalClient
 from integrations.urlscan import URLScanClient
+from integrations.virustotal import VirusTotalClient
 
 
 async def check_urls(raw_input: str, single: bool = False) -> list[dict]:
