@@ -109,7 +109,7 @@ def _categorize_ip(attempt_count: int) -> str:
 
 def _build_timeline(events: list[dict]) -> list[dict]:
     """Build an hourly timeline of events."""
-    hourly = Counter()
+    hourly: Counter[str] = Counter()
     for event in events:
         ts = event.get("timestamp")
         if ts:
