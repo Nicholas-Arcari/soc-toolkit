@@ -43,7 +43,7 @@ async def extract_iocs(file: UploadFile = File(...)):
 
     enriched = await validate_and_enrich(raw_iocs)
 
-    stats = {}
+    stats: dict[str, int] = {}
     for ioc in enriched:
         stats[ioc["type"]] = stats.get(ioc["type"], 0) + 1
 
@@ -61,7 +61,7 @@ async def extract_iocs_from_text(text: str = Body(..., embed=True)):
     raw_iocs = extract_from_text(text)
     enriched = await validate_and_enrich(raw_iocs)
 
-    stats = {}
+    stats: dict[str, int] = {}
     for ioc in enriched:
         stats[ioc["type"]] = stats.get(ioc["type"], 0) + 1
 
