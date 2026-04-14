@@ -1,4 +1,5 @@
 import re
+from typing import Any
 from urllib.parse import urlparse
 
 from integrations.urlscan import URLScanClient
@@ -22,7 +23,7 @@ async def check_urls(raw_input: str, single: bool = False) -> list[dict]:
     # Cap at 20 URLs to stay within VirusTotal free tier (4 req/min).
     # A real phishing email rarely has more than 5-10 unique URLs anyway
     for url in urls[:20]:
-        result = {
+        result: dict[str, Any] = {
             "url": url,
             "domain": urlparse(url).netloc,
             "suspicious_patterns": _check_suspicious_patterns(url),
