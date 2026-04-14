@@ -21,7 +21,7 @@ async def scan_attachment(raw_email: str) -> list[dict]:
 
         filename = part.get_filename() or "unknown"
         content = part.get_payload(decode=True)
-        if not content:
+        if not content or not isinstance(content, bytes):
             continue
 
         file_info = _analyze_file(filename, content)
