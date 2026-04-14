@@ -127,7 +127,7 @@ def _get_suspicious_reasons(entry: dict) -> list[str]:
 
 def _build_timeline(entries: list[dict]) -> list[dict]:
     """Build hourly request timeline."""
-    hourly = Counter()
+    hourly: Counter[str] = Counter()
     for entry in entries:
         ts = entry.get("timestamp", "")
         hour_match = re.search(r":(\d{2}):\d{2}:\d{2}", ts)
