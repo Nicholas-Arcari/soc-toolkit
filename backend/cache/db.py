@@ -63,7 +63,7 @@ def get_cached(service: str, query_type: str, query_value: str) -> dict | None:
             session.commit()
             return None
 
-        return json.loads(entry.response)
+        return json.loads(str(entry.response))
 
 
 def set_cached(
@@ -82,9 +82,9 @@ def set_cached(
         )
 
         if existing:
-            existing.response = json.dumps(response)
-            existing.created_at = time.time()
-            existing.ttl = ttl
+            existing.response = json.dumps(response)  # type: ignore[assignment]
+            existing.created_at = time.time()  # type: ignore[assignment]
+            existing.ttl = ttl  # type: ignore[assignment]
         else:
             entry = CacheEntry(
                 service=service,
