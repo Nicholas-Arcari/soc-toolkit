@@ -9,7 +9,7 @@ def extract_from_email(raw_email: str) -> list[dict]:
     msg = email.message_from_string(raw_email, policy=policy.default)
 
     # Collect all text parts
-    text_parts = []
+    text_parts: list[str] = []
 
     # Headers
     for header in ("From", "To", "Subject", "Return-Path", "Reply-To", "Received"):
@@ -22,11 +22,11 @@ def extract_from_email(raw_email: str) -> list[dict]:
             content_type = part.get_content_type()
             if content_type in ("text/plain", "text/html"):
                 payload = part.get_payload(decode=True)
-                if payload:
+                if payload and isinstance(payload, bytes):
                     text_parts.append(payload.decode("utf-8", errors="replace"))
     else:
         payload = msg.get_payload(decode=True)
-        if payload:
+        if payload and isinstance(payload, bytes):
             text_parts.append(payload.decode("utf-8", errors="replace"))
 
     combined_text = "\n".join(text_parts)
