@@ -172,7 +172,7 @@ def _detect_attack_patterns(events: list[dict]) -> list[dict]:
 
 def _build_timeline(events: list[dict]) -> list[dict]:
     """Build event timeline."""
-    hourly = Counter()
+    hourly: Counter[str] = Counter()
     for event in events:
         ts = event.get("timestamp", "")
         hour_match = re.search(r"(\d{2}):\d{2}:\d{2}", str(ts))
