@@ -25,7 +25,7 @@ class IOCExtractionResult(BaseModel):
 
 
 @router.post("/extract", response_model=IOCExtractionResult)
-async def extract_iocs(file: UploadFile = File(...)):
+async def extract_iocs(file: UploadFile = File(...)) -> IOCExtractionResult:
     """
     Extract IOCs from a file (PDF threat report, .eml email, or plain text).
 
@@ -56,7 +56,7 @@ async def extract_iocs(file: UploadFile = File(...)):
 
 
 @router.post("/extract-text", response_model=IOCExtractionResult)
-async def extract_iocs_from_text(text: str = Body(..., embed=True)):
+async def extract_iocs_from_text(text: str = Body(..., embed=True)) -> IOCExtractionResult:
     """Extract IOCs from raw text input."""
     raw_iocs = extract_from_text(text)
     enriched = await validate_and_enrich(raw_iocs)
