@@ -1,0 +1,30 @@
+title: Suspicious Administrator Account Created
+id: 3a9f12c1-win-admin-account-created
+status: stable
+description: |
+  User account added to the Administrators group shortly after creation.
+  Commonly seen during initial-access + persistence chains (T1136.001 local
+  account creation followed by T1098 account manipulation).
+references:
+  - https://attack.mitre.org/techniques/T1136/001/
+  - https://attack.mitre.org/techniques/T1098/
+author: SOC Toolkit
+date: 2026/04/13
+logsource:
+    product: windows
+    service: security
+detection:
+    account_created:
+        event_id: 4720
+    admin_added:
+        event_id: 4732
+        target_group|contains:
+            - Administrators
+            - Domain Admins
+            - Enterprise Admins
+    condition: 1 of account_created or admin_added
+level: high
+tags:
+    - attack.persistence
+    - attack.t1136.001
+    - attack.t1098
