@@ -1,0 +1,29 @@
+title: Suspicious Access to Uploaded Webshell
+id: 8e7b0932-web-webshell-access
+status: stable
+description: |
+  POST or GET to a file whose name/path looks like a dropped webshell. Paired
+  with the YARA rule webshell_php_generic on the filesystem side - YARA flags
+  the payload at rest, this rule flags runtime execution.
+references:
+  - https://attack.mitre.org/techniques/T1505/003/
+author: SOC Toolkit
+date: 2026/04/13
+logsource:
+    category: webserver
+detection:
+    shell_paths:
+        request_uri|contains:
+            - c99.php
+            - r57.php
+            - wso.php
+            - shell.php
+            - cmd.php
+            - /uploads/
+    suspicious_params:
+        request_uri|re: (cmd|exec|system|pass|cmd)=
+    condition: shell_paths and suspicious_params
+level: critical
+tags:
+    - attack.persistence
+    - attack.t1505.003
