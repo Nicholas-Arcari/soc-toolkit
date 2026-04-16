@@ -29,10 +29,21 @@ jobs:
         working-directory: ./backend
         run: poetry run ruff check .
 
-      - name: Type check with MyPy
+      - name: Type check with MyPy (strict)
         working-directory: ./backend
-        run: poetry run mypy --ignore-missing-imports .
+        run: poetry run mypy .
 
-      - name: Run tests
+      - name: Security scan with Bandit
         working-directory: ./backend
-        run: poetry run pytest --cov=core --cov-report=term-missing
+        run: poetry run bandit -r . -c pyproject.toml
+
+      - name: Audit dependencies with pip-audit
+        working-directory: ./backend
+        run: poetry run pip-audit --ignore-vuln PYSEC-2022-42969 || true
+
+      # Coverage gate: start conservative at 30% baseline (current state has
+      # untested middleware, exports, integrations). Tighten progressively as
+      # more tests are added - goal is 70% for a production SOC tool.
+      - name: Run tests with coverage gate
+        working-directory: ./backend
+        run: poetry run pytest --cov --cov-report=term-missing --cov-fail-under=30
