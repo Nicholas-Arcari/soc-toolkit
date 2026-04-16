@@ -2,8 +2,8 @@ import asyncio
 import json
 import time
 
-from sqlalchemy import Column, Float, Integer, String, Text, create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy import String, Text, create_engine
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 from config import settings
 
@@ -15,13 +15,13 @@ class Base(DeclarativeBase):
 class CacheEntry(Base):
     __tablename__ = "cache"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    service = Column(String(50), nullable=False, index=True)
-    query_type = Column(String(50), nullable=False)
-    query_value = Column(String(500), nullable=False, index=True)
-    response = Column(Text, nullable=False)
-    created_at = Column(Float, nullable=False, default=time.time)
-    ttl = Column(Integer, nullable=False, default=3600)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    service: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    query_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    query_value: Mapped[str] = mapped_column(String(500), nullable=False, index=True)
+    response: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[float] = mapped_column(nullable=False, default=time.time)
+    ttl: Mapped[int] = mapped_column(nullable=False, default=3600)
 
 
 # Use sync engine for SQLite (simpler, no async overhead needed for cache)
@@ -32,7 +32,7 @@ engine = create_engine(
 SessionLocal = sessionmaker(bind=engine)
 
 
-async def init_db():
+async def init_db() -> None:
     """Initialize the database and create tables.
 
     Runs the sync create_all in a thread to avoid blocking the async event
@@ -63,7 +63,7 @@ def get_cached(service: str, query_type: str, query_value: str) -> dict | None:
             session.commit()
             return None
 
-        return json.loads(str(entry.response))
+        return json.loads(entry.response)
 
 
 def set_cached(
@@ -72,7 +72,7 @@ def set_cached(
     query_value: str,
     response: dict,
     ttl: int = 3600,
-):
+) -> None:
     """Cache an API response."""
     with SessionLocal() as session:
         existing = (
@@ -82,9 +82,9 @@ def set_cached(
         )
 
         if existing:
-            existing.response = json.dumps(response)  # type: ignore[assignment]
-            existing.created_at = time.time()  # type: ignore[assignment]
-            existing.ttl = ttl  # type: ignore[assignment]
+            existing.response = json.dumps(response)
+            existing.created_at = time.time()
+            existing.ttl = ttl
         else:
             entry = CacheEntry(
                 service=service,
