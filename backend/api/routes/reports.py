@@ -16,7 +16,7 @@ class ExportRequest(BaseModel):
 
 
 @router.post("/export")
-async def export_report(request: ExportRequest):
+async def export_report(request: ExportRequest) -> StreamingResponse:
     """
     Export analysis results in JSON, CSV, or PDF format.
 
