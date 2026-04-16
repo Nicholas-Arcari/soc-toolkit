@@ -21,7 +21,7 @@ class PhishingResult(BaseModel):
 
 
 @router.post("/analyze", response_model=PhishingResult)
-async def analyze_email(file: UploadFile = File(...)):
+async def analyze_email(file: UploadFile = File(...)) -> PhishingResult:
     """Analyze an email file (.eml) for phishing indicators."""
     content = await file.read()
     raw_email = content.decode("utf-8", errors="replace")
@@ -44,7 +44,7 @@ async def analyze_email(file: UploadFile = File(...)):
 
 
 @router.post("/check-url")
-async def check_single_url(url: str = Body(..., embed=True)):
+async def check_single_url(url: str = Body(..., embed=True)) -> dict:
     """Check a single URL against threat intelligence sources."""
     results = await check_urls(url, single=True)
     return {"url": url, "results": results}
