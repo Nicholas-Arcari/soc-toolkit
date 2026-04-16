@@ -14,14 +14,14 @@ class RateLimiter:
     multiple coroutines query the same API concurrently.
     """
 
-    def __init__(self, max_requests: int, period: float = 60.0):
+    def __init__(self, max_requests: int, period: float = 60.0) -> None:
         self.max_requests = max_requests
         self.period = period
-        self.tokens = max_requests
+        self.tokens: float = max_requests
         self.last_refill = time.monotonic()
         self._lock = asyncio.Lock()
 
-    async def acquire(self):
+    async def acquire(self) -> None:
         async with self._lock:
             now = time.monotonic()
             elapsed = now - self.last_refill
@@ -46,7 +46,7 @@ class BaseAPIClient:
     RATE_LIMIT: int = 4  # requests per minute
     MAX_RETRIES: int = 3
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.rate_limiter = RateLimiter(self.RATE_LIMIT)
 
     def _get_headers(self) -> dict:
