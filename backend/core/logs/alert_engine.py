@@ -1,4 +1,8 @@
+import logging
+
 from integrations.abuseipdb import AbuseIPDBClient
+
+logger = logging.getLogger(__name__)
 
 
 async def generate_alerts(analysis: dict) -> list[dict]:
@@ -14,7 +18,9 @@ async def generate_alerts(analysis: dict) -> list[dict]:
         if count < 5:
             continue
 
-        # Enrich with threat intelligence
+        # Enrich with threat intelligence. Enrichment failures (missing API key,
+        # rate limit, network error) should never block alert generation - the
+        # brute force alert is valuable even without geo/reputation context.
         geo = None
         try:
             abuse_data = await abuseipdb.check_ip(ip)
@@ -25,8 +31,8 @@ async def generate_alerts(analysis: dict) -> list[dict]:
                 "is_tor": abuse_data.get("is_tor", False),
                 "total_reports": abuse_data.get("total_reports", 0),
             }
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("AbuseIPDB enrichment failed for %s: %s", ip, exc)
 
         severity = "critical" if count >= 100 else "high" if count >= 50 else "medium"
 
