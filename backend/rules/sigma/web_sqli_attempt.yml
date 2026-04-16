@@ -1,0 +1,29 @@
+title: Web SQL Injection Attempt
+id: c1d8f4b2-web-sqli-probe
+status: stable
+description: |
+  Classic SQLi probe signatures in the request URI or body. High false
+  positive rate on its own - useful as a triage hint, not an auto-block
+  trigger. Pair with response-status and response-size analysis.
+references:
+  - https://attack.mitre.org/techniques/T1190/
+  - https://owasp.org/www-community/attacks/SQL_Injection
+author: SOC Toolkit
+date: 2026/04/13
+logsource:
+    category: webserver
+detection:
+    sqli_keywords:
+        request_uri|contains:
+            - "' or 1=1"
+            - "' or '1'='1"
+            - "union select"
+            - "sleep("
+            - "waitfor delay"
+            - "/*!"
+            - "xp_cmdshell"
+    condition: sqli_keywords
+level: high
+tags:
+    - attack.initial_access
+    - attack.t1190
