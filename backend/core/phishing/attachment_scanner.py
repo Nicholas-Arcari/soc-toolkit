@@ -2,6 +2,7 @@ import email
 import hashlib
 from email import policy
 
+from core.yara.scanner import get_scanner
 from integrations.malwarebazaar import MalwareBazaarClient
 from integrations.virustotal import VirusTotalClient
 
@@ -25,6 +26,9 @@ async def scan_attachment(raw_email: str) -> list[dict]:
             continue
 
         file_info = _analyze_file(filename, content)
+        # Local YARA scan first - a match here is high-confidence detection
+        # that doesn't burn VirusTotal free-tier quota (4 req/min)
+        file_info["yara_matches"] = get_scanner().scan(content)
         file_info["virustotal"] = await _check_virustotal(file_info["hashes"]["sha256"])
         file_info["malwarebazaar"] = await _check_malwarebazaar(file_info["hashes"]["sha256"])
         file_info["malicious"] = _is_attachment_malicious(file_info)
@@ -42,10 +46,13 @@ def _analyze_file(filename: str, content: bytes) -> dict:
         "extension": filename.rsplit(".", 1)[-1].lower() if "." in filename else "",
         # Compute all three hash types: MD5 for legacy IOC databases,
         # SHA1 for compatibility, SHA256 for modern threat intel lookups.
-        # VirusTotal and MalwareBazaar primarily use SHA256
+        # VirusTotal and MalwareBazaar primarily use SHA256.
+        # MD5/SHA1 are not used for any cryptographic security decision here -
+        # they are only file fingerprints used as lookup keys against public
+        # threat intel feeds, so usedforsecurity=False is the correct annotation.
         "hashes": {
-            "md5": hashlib.md5(content).hexdigest(),
-            "sha1": hashlib.sha1(content).hexdigest(),
+            "md5": hashlib.md5(content, usedforsecurity=False).hexdigest(),
+            "sha1": hashlib.sha1(content, usedforsecurity=False).hexdigest(),
             "sha256": hashlib.sha256(content).hexdigest(),
         },
         "suspicious_extension": _is_suspicious_extension(filename),
@@ -99,7 +106,20 @@ async def _check_malwarebazaar(sha256: str) -> dict | None:
 
 
 def _is_attachment_malicious(file_info: dict) -> bool:
-    """Determine if attachment is malicious."""
+    """Determine if attachment is malicious.
+
+    Detection sources, in order of confidence:
+        1. YARA rule with high/critical severity metadata (local, high-signal)
+        2. VirusTotal positives > 2 (multi-engine consensus)
+        3. MalwareBazaar known sample (community validated)
+        4. Double-extension trick (social engineering)
+    """
+    yara_matches = file_info.get("yara_matches", [])
+    for match in yara_matches:
+        severity = match.get("metadata", {}).get("severity", "").lower()
+        if severity in ("critical", "high"):
+            return True
+
     if file_info.get("double_extension"):
         return True
 
