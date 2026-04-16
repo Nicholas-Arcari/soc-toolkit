@@ -22,7 +22,7 @@ console = Console()
 
 
 @app.command()
-def phishing(file: Path = typer.Argument(..., help="Path to .eml email file")):
+def phishing(file: Path = typer.Argument(..., help="Path to .eml email file")) -> None:
     """Analyze an email file for phishing indicators."""
     if not file.exists():
         console.print(f"[red]File not found: {file}[/red]")
@@ -63,7 +63,7 @@ def phishing(file: Path = typer.Argument(..., help="Path to .eml email file")):
 def logs(
     file: Path = typer.Argument(..., help="Path to log file"),
     log_type: str = typer.Option("auto", help="Log type: ssh, apache, nginx, windows, auto"),
-):
+) -> None:
     """Analyze a log file for suspicious activity."""
     if not file.exists():
         console.print(f"[red]File not found: {file}[/red]")
@@ -94,7 +94,7 @@ def logs(
 
 
 @app.command()
-def ioc(file: Path = typer.Argument(..., help="Path to file (PDF, TXT, EML)")):
+def ioc(file: Path = typer.Argument(..., help="Path to file (PDF, TXT, EML)")) -> None:
     """Extract IOCs from a file."""
     if not file.exists():
         console.print(f"[red]File not found: {file}[/red]")
