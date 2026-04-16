@@ -29,7 +29,10 @@ class LogAnalysisResult(BaseModel):
 
 
 @router.post("/analyze", response_model=LogAnalysisResult)
-async def analyze_logs(file: UploadFile = File(...), log_type: str = "auto"):
+async def analyze_logs(
+    file: UploadFile = File(...),
+    log_type: str = "auto",
+) -> LogAnalysisResult:
     """
     Analyze a log file for suspicious activity.
 
