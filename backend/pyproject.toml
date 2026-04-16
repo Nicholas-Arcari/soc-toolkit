@@ -36,6 +36,13 @@ geoip2 = "^4.8.0"
 typer = "^0.15.0"
 rich = "^13.9.0"
 
+# YARA-X - Rust rewrite of YARA from VirusTotal. Pure-Python wheels mean no
+# libyara C dependency in the Docker image or CI runners.
+yara-x = "^1.15.0"
+
+# Sigma rule parsing (detection rules are YAML)
+pyyaml = "^6.0.2"
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"
 pytest-asyncio = "^0.24.0"
@@ -43,6 +50,9 @@ pytest-cov = "^6.0.0"
 ruff = "^0.8.0"
 mypy = "^1.13.0"
 httpx = "^0.28.0"
+bandit = "^1.8.0"
+pip-audit = "^2.7.0"
+pre-commit = "^4.0.0"
 
 [tool.poetry.scripts]
 soc-toolkit = "cli:app"
@@ -54,9 +64,38 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
 
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+strict_equality = true
+no_implicit_optional = true
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["../tests"]
+
+[tool.coverage.run]
+source = ["core", "api", "integrations", "export", "cache"]
+omit = ["*/tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]
+skips = ["B101"]  # assert_used: pytest relies on assert statements
 
 [build-system]
 requires = ["poetry-core"]
