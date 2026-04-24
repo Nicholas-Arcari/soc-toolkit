@@ -1,0 +1,59 @@
+name: Feature request
+description: Propose a new capability or an enhancement to an existing one.
+title: "[feat]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening a feature request, please check whether the same idea
+        is already tracked under an existing issue or discussion.
+
+        If the feature would affect `osint-toolkit`'s passive-by-default
+        posture (new active probes, new outbound integrations, scope
+        broadening), read [ETHICS.md](../../ETHICS.md) first - proposals that
+        conflict with that posture will be closed.
+
+  - type: dropdown
+    id: workspace
+    attributes:
+      label: Which workspace would this land in?
+      options:
+        - soc-toolkit
+        - osint-toolkit
+        - sec-common
+        - tooling / CI / docs
+        - I'm not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the concrete situation today that is painful or impossible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What do you want the toolkit to do? Be specific about UX, API shape, configuration.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What else could solve this? Why is the proposal above preferable?
+
+  - type: checkboxes
+    id: authorized-use
+    attributes:
+      label: Authorized-use check
+      description: Required for features that could generate outbound traffic, enumerate third-party perimeters, or collect personal data.
+      options:
+        - label: This feature does not make it easier to operate outside a defined, authorized scope.
+          required: true
