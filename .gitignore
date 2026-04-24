@@ -28,10 +28,11 @@ env/
 
 # Node
 node_modules/
-frontend/dist/
+**/dist/
 
 # Docker
 .docker/
+docker-compose.override.yml
 
 # Testing
 .coverage
