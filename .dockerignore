@@ -1,0 +1,81 @@
+# Exclusions applied to every Docker build context rooted at the
+# monorepo root (soc-frontend, osint-backend, osint-frontend).
+# The scoped soc-backend context has its own .dockerignore under
+# packages/soc-toolkit/backend/.
+
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Local environment files - never want .env to leak into an image
+.env
+.env.*
+!.env.example
+
+# CI / tooling / editor droppings
+.github
+.claude
+.vscode
+.idea
+*.swp
+*.swo
+
+# Node tooling (re-installed inside the build stage from lock files)
+node_modules
+**/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python tooling caches and virtualenvs
+.venv
+venv
+**/.venv
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.tox
+htmlcov
+coverage.xml
+.coverage
+.coverage.*
+
+# Build outputs - the image builds fresh
+dist
+build
+**/dist
+**/build
+*.egg-info
+**/*.egg-info
+
+# Tests and fixtures - not shipped in runtime images
+**/tests
+**/test_*.py
+**/*_test.py
+
+# Docs - not needed inside containers
+docs
+CHANGELOG.md
+CONTRIBUTING.md
+ETHICS.md
+README.md
+**/README.md
+
+# Local database and scan data
+**/data/*.db
+**/data/*.db-journal
+**/data/*.db-wal
+**/data/*.db-shm
+
+# Compose overrides and local dev artifacts
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+
+# Pre-commit / lint configs used at dev time only
+.pre-commit-config.yaml
+.editorconfig
