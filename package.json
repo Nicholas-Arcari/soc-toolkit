@@ -1,0 +1,12 @@
+{
+  "name": "sec-toolkit-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo root for sec-toolkit: soc-toolkit (defensive SOC), osint-toolkit (attack surface + investigative OSINT), sec-common (shared library).",
+  "workspaces": [
+    "packages/sec-common/frontend",
+    "packages/soc-toolkit/frontend",
+    "packages/osint-toolkit/frontend",
+    "e2e"
+  ]
+}
