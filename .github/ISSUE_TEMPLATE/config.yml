@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability in this toolkit
+    url: https://github.com/Nicholas-Arcari/soc-toolkit/security/advisories/new
+    about: Report privately via GitHub Security Advisories. Do not open a public issue for unpatched security bugs.
+  - name: Questions and discussion
+    url: https://github.com/Nicholas-Arcari/soc-toolkit/discussions
+    about: Usage questions, ideas, or general discussion belong in Discussions, not Issues.
