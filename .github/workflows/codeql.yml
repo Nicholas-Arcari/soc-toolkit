@@ -1,0 +1,50 @@
+# GitHub CodeQL analysis for Python and JS/TS. Runs on PRs targeting main
+# (so regressions surface before merge), on pushes to main (post-merge
+# confirmation), and on a weekly schedule (catches newly-published queries
+# that flag existing code).
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Monday 05:00 UTC - aligned with the Dependabot window so a weekly
+    # maintenance digest is easy to assemble.
+    - cron: "0 5 * * 1"
+
+permissions:
+  actions: read
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - language: python
+            build-mode: none
+          - language: javascript-typescript
+            build-mode: none
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+          # security-extended adds queries beyond the default set at the
+          # cost of a longer run - fine for a weekly schedule.
+          queries: security-extended
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
