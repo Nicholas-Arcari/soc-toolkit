@@ -1,6 +1,22 @@
+# Per-toolkit profiles so the monorepo can ship one compose file without
+# forcing every user to stand up both stacks.
+#
+#   docker compose --profile soc      up --build    # just the SOC app
+#   docker compose --profile osint    up --build    # just the OSINT app (SQLite)
+#   docker compose --profile postgres up --build    # OSINT backed by Postgres
+#   docker compose --profile all      up --build    # everything
+#
+# Ports are deliberately offset (soc 8000/3000, osint 8001/3001) so
+# running `--profile all` puts both stacks side-by-side without rewiring.
 services:
-  backend:
-    build: ./backend
+  soc-backend:
+    # Build from monorepo root so the `../../sec-common/python` path
+    # dependency in soc-toolkit's pyproject.toml resolves inside the
+    # build context (same pattern as osint-backend).
+    build:
+      context: .
+      dockerfile: packages/soc-toolkit/backend/Dockerfile
+    profiles: ["soc", "all"]
     ports:
       - "8000:8000"
     env_file:
@@ -8,16 +24,104 @@ services:
     environment:
       - DATABASE_URL=sqlite:///./data/soc_toolkit.db
     volumes:
-      - sqlite-data:/app/data
+      - soc-data:/app/packages/soc-toolkit/backend/data
     restart: unless-stopped
 
-  frontend:
-    build: ./frontend
+  soc-frontend:
+    build:
+      context: .
+      dockerfile: packages/soc-toolkit/frontend/Dockerfile
+    profiles: ["soc", "all"]
     ports:
-      - "3000:80"
+      - "3000:8080"
     depends_on:
-      - backend
+      - soc-backend
+    restart: unless-stopped
+
+  osint-backend:
+    build:
+      context: .
+      dockerfile: packages/osint-toolkit/backend/Dockerfile
+    profiles: ["osint", "all"]
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      # Separate env var name from soc-toolkit's DATABASE_URL so both
+      # stacks can share the same `.env` without colliding on the cache
+      # vs. persistent-state database.
+      - OSINT_DATABASE_URL=sqlite+aiosqlite:///./data/osint_toolkit.db
+      - OSINT_ENABLE_ACTIVE_SCANNING=false
+    volumes:
+      - osint-data:/app/packages/osint-toolkit/backend/data
+    restart: unless-stopped
+
+  osint-frontend:
+    build:
+      context: .
+      dockerfile: packages/osint-toolkit/frontend/Dockerfile
+    profiles: ["osint", "all"]
+    ports:
+      - "3001:8080"
+    depends_on:
+      - osint-backend
+    restart: unless-stopped
+
+  # --- Postgres profile ------------------------------------------------
+  # `docker compose --profile postgres up --build` swaps the OSINT backend
+  # to an asyncpg URL. Mainly for installs that want proper concurrent
+  # writes or don't want to deal with SQLite's file locking on shared
+  # volumes. The SOC app stays on SQLite (its DB is a disposable cache).
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["postgres"]
+    environment:
+      POSTGRES_USER: osint
+      POSTGRES_PASSWORD: osint
+      POSTGRES_DB: osint_toolkit
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # No host port by default - the backend talks over the compose
+    # network. Uncomment to inspect via psql from the host.
+    # ports:
+    #   - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U osint -d osint_toolkit"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  osint-backend-pg:
+    build:
+      context: .
+      dockerfile: packages/osint-toolkit/backend/Dockerfile
+    profiles: ["postgres"]
+    ports:
+      - "8001:8001"
+    env_file:
+      - .env
+    environment:
+      - OSINT_DATABASE_URL=postgresql+asyncpg://osint:osint@postgres:5432/osint_toolkit
+      - OSINT_ENABLE_ACTIVE_SCANNING=false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  osint-frontend-pg:
+    build:
+      context: .
+      dockerfile: packages/osint-toolkit/frontend/Dockerfile
+    profiles: ["postgres"]
+    ports:
+      - "3001:8080"
+    depends_on:
+      - osint-backend-pg
     restart: unless-stopped
 
 volumes:
-  sqlite-data:
+  soc-data:
+  osint-data:
+  postgres-data:
