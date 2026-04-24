@@ -6,10 +6,70 @@ on:
   pull_request:
     branches: [main]
 
-jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
+# Prevent redundant runs when a branch is pushed to multiple times in quick
+# succession: cancel older runs on the same ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      sec-common-python: ${{ steps.filter.outputs.sec-common-python }}
+      sec-common-frontend: ${{ steps.filter.outputs.sec-common-frontend }}
+      soc-toolkit-backend: ${{ steps.filter.outputs.soc-toolkit-backend }}
+      soc-toolkit-frontend: ${{ steps.filter.outputs.soc-toolkit-frontend }}
+      osint-toolkit-backend: ${{ steps.filter.outputs.osint-toolkit-backend }}
+      osint-toolkit-frontend: ${{ steps.filter.outputs.osint-toolkit-frontend }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # soc-toolkit depends on sec-common, so its filter includes the
+          # sec-common paths - a sec-common change re-runs downstream checks.
+          filters: |
+            sec-common-python:
+              - 'packages/sec-common/python/**'
+              - '.github/workflows/ci.yml'
+            sec-common-frontend:
+              - 'packages/sec-common/frontend/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/ci.yml'
+            soc-toolkit-backend:
+              - 'packages/soc-toolkit/backend/**'
+              - 'packages/sec-common/python/**'
+              - '.github/workflows/ci.yml'
+            soc-toolkit-frontend:
+              - 'packages/soc-toolkit/frontend/**'
+              - 'packages/sec-common/frontend/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/ci.yml'
+            osint-toolkit-backend:
+              - 'packages/osint-toolkit/backend/**'
+              - 'packages/osint-toolkit/tests/**'
+              - 'packages/sec-common/python/**'
+              - '.github/workflows/ci.yml'
+            osint-toolkit-frontend:
+              - 'packages/osint-toolkit/frontend/**'
+              - 'packages/sec-common/frontend/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/ci.yml'
+            e2e:
+              - 'e2e/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/ci.yml'
+
+  sec-common-python:
+    needs: changes
+    if: needs.changes.outputs.sec-common-python == 'true'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -22,28 +82,346 @@ jobs:
         run: pip install poetry==1.8.4
 
       - name: Install dependencies
-        working-directory: ./backend
-        run: poetry install --no-interaction
+        working-directory: ./packages/sec-common/python
+        run: poetry install --no-interaction --no-root
 
       - name: Lint with Ruff
-        working-directory: ./backend
+        working-directory: ./packages/sec-common/python
         run: poetry run ruff check .
 
       - name: Type check with MyPy (strict)
-        working-directory: ./backend
+        working-directory: ./packages/sec-common/python
         run: poetry run mypy .
 
       - name: Security scan with Bandit
-        working-directory: ./backend
+        working-directory: ./packages/sec-common/python
+        run: poetry run bandit -r sec_common -c pyproject.toml
+
+      - name: Audit dependencies with pip-audit
+        working-directory: ./packages/sec-common/python
+        run: poetry run pip-audit --ignore-vuln PYSEC-2022-42969 || true
+
+      - name: Run tests with coverage gate
+        working-directory: ./packages/sec-common/python
+        run: poetry run pytest --cov=sec_common --cov-fail-under=70 -q
+
+  soc-toolkit-backend:
+    needs: changes
+    if: needs.changes.outputs.soc-toolkit-backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry==1.8.4
+
+      - name: Install dependencies
+        working-directory: ./packages/soc-toolkit/backend
+        run: poetry install --no-interaction --no-root
+
+      - name: Lint with Ruff
+        working-directory: ./packages/soc-toolkit/backend
+        run: poetry run ruff check .
+
+      - name: Type check with MyPy (strict)
+        working-directory: ./packages/soc-toolkit/backend
+        run: poetry run mypy .
+
+      - name: Security scan with Bandit
+        working-directory: ./packages/soc-toolkit/backend
         run: poetry run bandit -r . -c pyproject.toml
 
       - name: Audit dependencies with pip-audit
-        working-directory: ./backend
+        working-directory: ./packages/soc-toolkit/backend
         run: poetry run pip-audit --ignore-vuln PYSEC-2022-42969 || true
 
-      # Coverage gate: start conservative at 30% baseline (current state has
-      # untested middleware, exports, integrations). Tighten progressively as
-      # more tests are added - goal is 70% for a production SOC tool.
+      # Coverage gate: current measured coverage is ~72% (2026-04-23), gate
+      # set to 65% to lock in recent gains while leaving ~7pp of margin for
+      # legitimate churn. Goal remains 70% for a production SOC tool - bump
+      # the gate when new test batches make the jump safe.
       - name: Run tests with coverage gate
-        working-directory: ./backend
-        run: poetry run pytest --cov --cov-report=term-missing --cov-fail-under=30
+        working-directory: ./packages/soc-toolkit/backend
+        run: poetry run pytest --cov --cov-report=term-missing --cov-fail-under=65
+
+  sec-common-frontend:
+    needs: changes
+    if: needs.changes.outputs.sec-common-frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install workspace dependencies
+        run: npm ci
+
+      - name: Type check
+        working-directory: ./packages/sec-common/frontend
+        run: npx tsc --noEmit
+
+  soc-toolkit-frontend:
+    needs: changes
+    if: needs.changes.outputs.soc-toolkit-frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install workspace dependencies
+        run: npm ci
+
+      - name: Lint
+        working-directory: ./packages/soc-toolkit/frontend
+        run: npm run lint
+
+      - name: Type check and build
+        working-directory: ./packages/soc-toolkit/frontend
+        run: npm run build
+
+      - name: Run Vitest
+        working-directory: ./packages/soc-toolkit/frontend
+        run: npm test
+
+  osint-toolkit-backend:
+    needs: changes
+    if: needs.changes.outputs.osint-toolkit-backend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pip install poetry==1.8.4
+
+      - name: Install dependencies
+        working-directory: ./packages/osint-toolkit/backend
+        run: poetry install --no-interaction --no-root
+
+      - name: Lint with Ruff
+        working-directory: ./packages/osint-toolkit/backend
+        run: poetry run ruff check .
+
+      - name: Type check with MyPy
+        working-directory: ./packages/osint-toolkit/backend
+        run: poetry run mypy .
+
+      - name: Security scan with Bandit
+        working-directory: ./packages/osint-toolkit/backend
+        run: poetry run bandit -r . -c pyproject.toml
+
+      - name: Audit dependencies with pip-audit
+        working-directory: ./packages/osint-toolkit/backend
+        run: poetry run pip-audit --ignore-vuln PYSEC-2022-42969 || true
+
+      # Alembic migrations must apply cleanly against a fresh SQLite file;
+      # CI catches the SQLite-doesn't-support-ALTER class of bug (see the
+      # subdomain-unique-constraint migration) before it hits main.
+      - name: Verify Alembic migrations apply
+        working-directory: ./packages/osint-toolkit/backend
+        env:
+          OSINT_DATABASE_URL: sqlite+aiosqlite:///./ci_migration_check.db
+        run: poetry run alembic upgrade head
+
+      # OSINT toolkit gate starts at 50% - the plan calls for ≥50% coverage
+      # given it's a new app built on tested sec-common primitives.
+      - name: Run tests with coverage gate
+        working-directory: ./packages/osint-toolkit/backend
+        run: poetry run pytest --cov --cov-report=term-missing --cov-fail-under=50
+
+  osint-toolkit-frontend:
+    needs: changes
+    if: needs.changes.outputs.osint-toolkit-frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install workspace dependencies
+        run: npm ci
+
+      - name: Lint
+        working-directory: ./packages/osint-toolkit/frontend
+        run: npm run lint
+
+      - name: Type check and build
+        working-directory: ./packages/osint-toolkit/frontend
+        run: npm run build
+
+      - name: Run Vitest
+        working-directory: ./packages/osint-toolkit/frontend
+        run: npm test
+
+  # Full-stack smoke test: build all four images via compose and hit each
+  # backend's /api/health plus the frontends. Catches regressions that
+  # per-workspace jobs miss - Dockerfile drift, nginx upstream typos,
+  # migration ordering, cross-service networking.
+  compose-smoke:
+    needs: changes
+    if: |
+      needs.changes.outputs.soc-toolkit-backend == 'true'
+      || needs.changes.outputs.soc-toolkit-frontend == 'true'
+      || needs.changes.outputs.osint-toolkit-backend == 'true'
+      || needs.changes.outputs.osint-toolkit-frontend == 'true'
+      || needs.changes.outputs.sec-common-python == 'true'
+      || needs.changes.outputs.sec-common-frontend == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Seed a safe .env from the example
+        # Every backend mounts .env via compose env_file; the example file
+        # has placeholder values only, which is what we want in CI - the
+        # integrations all degrade cleanly without real keys.
+        run: cp .env.example .env
+
+      - name: Build and start compose stack
+        run: docker compose --profile all up -d --build
+
+      - name: Wait for SOC backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/api/health >/dev/null 2>&1; then
+              echo "soc-backend healthy after ${i}s"
+              curl -fsS http://localhost:8000/api/health
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "soc-backend failed to become healthy"
+          exit 1
+
+      - name: Wait for OSINT backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/api/health >/dev/null 2>&1; then
+              echo "osint-backend healthy after ${i}s"
+              curl -fsS http://localhost:8001/api/health
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "osint-backend failed to become healthy"
+          exit 1
+
+      - name: Smoke-test frontends
+        run: |
+          # Frontends serve index.html - we just want a 200 + HTML in
+          # the body. Failure here usually means the nginx upstream
+          # resolver points at the wrong backend service name.
+          curl -fsS http://localhost:3000/ | grep -qi '<html'
+          curl -fsS http://localhost:3001/ | grep -qi '<html'
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose --profile all logs --no-color --tail=200
+
+      - name: Tear down
+        if: always()
+        run: docker compose --profile all down -v --remove-orphans
+
+  # Browser-level smoke: drives the real SOC + OSINT UIs against the running
+  # compose stack. Catches the contract-drift class of bug (API shape changed
+  # but the form still submits, nginx routes the request to the wrong
+  # upstream, SPA routing eats a 404 silently) that neither the per-workspace
+  # tests nor compose-smoke can see.
+  e2e-smoke:
+    needs: changes
+    if: |
+      needs.changes.outputs.soc-toolkit-backend == 'true'
+      || needs.changes.outputs.soc-toolkit-frontend == 'true'
+      || needs.changes.outputs.osint-toolkit-backend == 'true'
+      || needs.changes.outputs.osint-toolkit-frontend == 'true'
+      || needs.changes.outputs.sec-common-python == 'true'
+      || needs.changes.outputs.sec-common-frontend == 'true'
+      || needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Seed a safe .env from the example
+        run: cp .env.example .env
+
+      - name: Install workspace dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: ./e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Build and start compose stack
+        run: docker compose --profile all up -d --build
+
+      - name: Wait for SOC backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/api/health >/dev/null 2>&1; then
+              echo "soc-backend healthy after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "soc-backend failed to become healthy"
+          exit 1
+
+      - name: Wait for OSINT backend health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/api/health >/dev/null 2>&1; then
+              echo "osint-backend healthy after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "osint-backend failed to become healthy"
+          exit 1
+
+      - name: Run Playwright tests
+        working-directory: ./e2e
+        run: npm test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e/playwright-report/
+          retention-days: 7
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose --profile all logs --no-color --tail=300
+
+      - name: Tear down
+        if: always()
+        run: docker compose --profile all down -v --remove-orphans
