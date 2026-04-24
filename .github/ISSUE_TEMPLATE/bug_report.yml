@@ -1,0 +1,76 @@
+name: Bug report
+description: Report a defect in soc-toolkit, osint-toolkit or sec-common.
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug. Please give enough detail
+        that a maintainer can reproduce the problem without a back-and-forth.
+        **Do not include real target data, API keys, or evidence from an
+        active investigation** in this report.
+
+  - type: dropdown
+    id: workspace
+    attributes:
+      label: Which workspace is affected?
+      options:
+        - soc-toolkit (backend)
+        - soc-toolkit (frontend)
+        - osint-toolkit (backend)
+        - osint-toolkit (frontend)
+        - sec-common (python)
+        - sec-common (frontend)
+        - docker / compose / CI
+        - docs
+        - I'm not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the actual behavior.
+      placeholder: "When I upload X, the response contains Y; I expected Z."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Minimal, numbered steps. Include sample inputs if small (sanitized).
+      placeholder: |
+        1. `docker compose --profile soc up -d`
+        2. Upload the attached `.eml` to /phishing
+        3. Observe 500 response
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Toolkit version/commit, OS, Python/Node versions, whether you're running via compose or bare-metal.
+      placeholder: |
+        - Version/commit: v0.2.0 / abcdef1
+        - OS: Ubuntu 24.04 / macOS 15 / Windows 11 + WSL2
+        - Runtime: docker compose --profile osint / native Poetry + Vite
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Backend stderr, nginx error log, browser console. Redact anything sensitive.
+      render: text
