@@ -22,15 +22,15 @@ repos:
     hooks:
       - id: ruff
         args: [--fix]
-        files: ^backend/
+        files: ^packages/soc-toolkit/backend/
       - id: ruff-format
-        files: ^backend/
+        files: ^packages/soc-toolkit/backend/
 
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.13.0
     hooks:
       - id: mypy
-        files: ^backend/
+        files: ^packages/soc-toolkit/backend/
         args: [--ignore-missing-imports, --disallow-untyped-defs]
         additional_dependencies:
           - pydantic
@@ -41,7 +41,7 @@ repos:
     rev: 1.8.0
     hooks:
       - id: bandit
-        args: [-c, backend/pyproject.toml]
-        files: ^backend/
-        exclude: ^backend/tests/
+        args: [-c, packages/soc-toolkit/backend/pyproject.toml]
+        files: ^packages/soc-toolkit/backend/
+        exclude: ^packages/soc-toolkit/tests/
         additional_dependencies: ["bandit[toml]"]
