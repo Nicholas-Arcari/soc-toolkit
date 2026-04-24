@@ -1,0 +1,72 @@
+# Code of Conduct
+
+This project adopts version 2.1 of the [Contributor Covenant](https://www.contributor-covenant.org/version/2/1/code_of_conduct/).
+The full text is authoritative; a summary is reproduced below for convenience.
+
+## Our pledge
+
+We as members, contributors, and leaders pledge to make participation in our
+community a respectful experience for everyone, regardless of age, body size,
+visible or invisible disability, ethnicity, sex characteristics, gender
+identity and expression, level of experience, education, socio-economic
+status, nationality, personal appearance, race, religion, or sexual
+identity and orientation.
+
+We pledge to act and interact in ways that contribute to an open, welcoming,
+diverse, inclusive, and healthy community.
+
+## Expected behavior
+
+- Demonstrating empathy and kindness toward other people.
+- Being respectful of differing opinions, viewpoints, and experiences.
+- Giving and gracefully accepting constructive feedback.
+- Accepting responsibility and apologizing to those affected by our mistakes,
+  and learning from the experience.
+- Focusing on what is best for the overall community.
+
+## Unacceptable behavior
+
+- The use of sexualized language or imagery, and sexual attention or advances
+  of any kind.
+- Trolling, insulting or derogatory comments, and personal or political
+  attacks.
+- Public or private harassment.
+- Publishing others' private information, such as a physical or email
+  address, without their explicit permission.
+- Other conduct which could reasonably be considered inappropriate in a
+  professional setting.
+
+## Enforcement responsibilities
+
+Project maintainers are responsible for clarifying and enforcing the
+standards above and will take appropriate and fair corrective action in
+response to any behavior they deem inappropriate, threatening, offensive,
+or harmful.
+
+## Scope
+
+This Code of Conduct applies within all community spaces and also applies
+when an individual is officially representing the community in public
+spaces. Examples include using an official email address, posting via an
+official social media account, or acting as an appointed representative at
+an online or offline event.
+
+## Reporting
+
+Instances of unacceptable behavior may be reported to the project
+maintainer via the email address listed in the repository metadata.
+All complaints will be reviewed and investigated promptly and fairly.
+
+Maintainers are obligated to respect the privacy and security of the
+reporter of any incident.
+
+## Enforcement guidelines
+
+Maintainers will follow the Contributor Covenant 2.1 enforcement ladder
+(correction → warning → temporary ban → permanent ban) when determining
+consequences. The full ladder is in the upstream document linked above.
+
+## Attribution
+
+This Code of Conduct is adapted from the Contributor Covenant, version 2.1,
+available at https://www.contributor-covenant.org/version/2/1/code_of_conduct.html.
