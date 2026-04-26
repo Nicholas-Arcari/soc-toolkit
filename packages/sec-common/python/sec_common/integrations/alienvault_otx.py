@@ -1,5 +1,4 @@
-from config import settings
-from integrations.base_client import BaseAPIClient
+from sec_common.http import BaseAPIClient
 
 
 class AlienVaultOTXClient(BaseAPIClient):
@@ -8,15 +7,19 @@ class AlienVaultOTXClient(BaseAPIClient):
     BASE_URL = "https://otx.alienvault.com/api/v1"
     RATE_LIMIT = 10
 
+    def __init__(self, api_key: str = "") -> None:
+        super().__init__()
+        self.api_key = api_key
+
     def _get_headers(self) -> dict:
         headers = {"Accept": "application/json"}
-        if settings.has_api_key("otx"):
-            headers["X-OTX-API-KEY"] = settings.otx_api_key
+        if self.api_key:
+            headers["X-OTX-API-KEY"] = self.api_key
         return headers
 
     async def check_ip(self, ip: str) -> dict:
         """Look up an IP on AlienVault OTX."""
-        if not settings.has_api_key("otx"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
@@ -41,7 +44,7 @@ class AlienVaultOTXClient(BaseAPIClient):
 
     async def check_domain(self, domain: str) -> dict:
         """Look up a domain on AlienVault OTX."""
-        if not settings.has_api_key("otx"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
@@ -60,7 +63,7 @@ class AlienVaultOTXClient(BaseAPIClient):
 
     async def check_hash(self, file_hash: str) -> dict:
         """Look up a file hash on AlienVault OTX."""
-        if not settings.has_api_key("otx"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
