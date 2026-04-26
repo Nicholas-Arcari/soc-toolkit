@@ -1,7 +1,6 @@
 import base64
 
-from config import settings
-from integrations.base_client import BaseAPIClient
+from sec_common.http import BaseAPIClient
 
 
 class VirusTotalClient(BaseAPIClient):
@@ -10,15 +9,19 @@ class VirusTotalClient(BaseAPIClient):
     BASE_URL = "https://www.virustotal.com/api/v3"
     RATE_LIMIT = 4
 
+    def __init__(self, api_key: str = "") -> None:
+        super().__init__()
+        self.api_key = api_key
+
     def _get_headers(self) -> dict:
         return {
             "Accept": "application/json",
-            "x-apikey": settings.virustotal_api_key,
+            "x-apikey": self.api_key,
         }
 
     async def check_hash(self, file_hash: str) -> dict:
         """Look up a file hash (MD5, SHA1, SHA256)."""
-        if not settings.has_api_key("virustotal"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
@@ -38,7 +41,7 @@ class VirusTotalClient(BaseAPIClient):
 
     async def check_url(self, url: str) -> dict:
         """Look up a URL."""
-        if not settings.has_api_key("virustotal"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         url_id = base64.urlsafe_b64encode(url.encode()).decode().rstrip("=")
@@ -56,7 +59,7 @@ class VirusTotalClient(BaseAPIClient):
 
     async def check_ip(self, ip: str) -> dict:
         """Look up an IP address."""
-        if not settings.has_api_key("virustotal"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
@@ -75,7 +78,7 @@ class VirusTotalClient(BaseAPIClient):
 
     async def check_domain(self, domain: str) -> dict:
         """Look up a domain."""
-        if not settings.has_api_key("virustotal"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
