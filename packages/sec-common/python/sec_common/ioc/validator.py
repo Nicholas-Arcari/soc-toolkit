@@ -1,14 +1,23 @@
-from integrations.abuseipdb import AbuseIPDBClient
-from integrations.alienvault_otx import AlienVaultOTXClient
-from integrations.virustotal import VirusTotalClient
+from sec_common.integrations import (
+    AbuseIPDBClient,
+    AlienVaultOTXClient,
+    VirusTotalClient,
+)
 
 
-async def validate_and_enrich(raw_iocs: list[dict]) -> list[dict]:
-    """Validate IOCs and enrich with threat intelligence data."""
-    vt = VirusTotalClient()
-    abuseipdb = AbuseIPDBClient()
-    otx = AlienVaultOTXClient()
+async def validate_and_enrich(
+    raw_iocs: list[dict],
+    *,
+    vt: VirusTotalClient,
+    abuseipdb: AbuseIPDBClient,
+    otx: AlienVaultOTXClient,
+) -> list[dict]:
+    """Validate IOCs and enrich with threat intelligence data.
 
+    Clients are injected so this stays free of any app-specific Settings
+    and can be reused from both SOC and OSINT toolkits (different .envs,
+    different key plumbing, same enrichment logic).
+    """
     enriched = []
 
     for ioc in raw_iocs:
