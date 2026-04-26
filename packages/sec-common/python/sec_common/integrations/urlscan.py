@@ -1,5 +1,4 @@
-from config import settings
-from integrations.base_client import BaseAPIClient
+from sec_common.http import BaseAPIClient
 
 
 class URLScanClient(BaseAPIClient):
@@ -8,10 +7,14 @@ class URLScanClient(BaseAPIClient):
     BASE_URL = "https://urlscan.io/api/v1"
     RATE_LIMIT = 2
 
+    def __init__(self, api_key: str = "") -> None:
+        super().__init__()
+        self.api_key = api_key
+
     def _get_headers(self) -> dict:
         headers = {"Accept": "application/json"}
-        if settings.has_api_key("urlscan"):
-            headers["API-Key"] = settings.urlscan_api_key
+        if self.api_key:
+            headers["API-Key"] = self.api_key
         return headers
 
     async def check_url(self, url: str) -> dict:
