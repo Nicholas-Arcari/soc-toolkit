@@ -1,5 +1,4 @@
-from config import settings
-from integrations.base_client import BaseAPIClient
+from sec_common.http import BaseAPIClient
 
 
 class AbuseIPDBClient(BaseAPIClient):
@@ -8,15 +7,19 @@ class AbuseIPDBClient(BaseAPIClient):
     BASE_URL = "https://api.abuseipdb.com/api/v2"
     RATE_LIMIT = 15
 
+    def __init__(self, api_key: str = "") -> None:
+        super().__init__()
+        self.api_key = api_key
+
     def _get_headers(self) -> dict:
         return {
             "Accept": "application/json",
-            "Key": settings.abuseipdb_api_key,
+            "Key": self.api_key,
         }
 
     async def check_ip(self, ip: str) -> dict:
         """Check an IP address for abuse reports."""
-        if not settings.has_api_key("abuseipdb"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
