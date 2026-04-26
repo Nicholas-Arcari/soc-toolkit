@@ -1,5 +1,4 @@
-from config import settings
-from integrations.base_client import BaseAPIClient
+from sec_common.http import BaseAPIClient
 
 
 class ShodanClient(BaseAPIClient):
@@ -8,14 +7,18 @@ class ShodanClient(BaseAPIClient):
     BASE_URL = "https://api.shodan.io"
     RATE_LIMIT = 1  # Free tier is very limited
 
+    def __init__(self, api_key: str = "") -> None:
+        super().__init__()
+        self.api_key = api_key
+
     async def check_ip(self, ip: str) -> dict:
         """Look up an IP address on Shodan."""
-        if not settings.has_api_key("shodan"):
+        if not self.api_key:
             return {"error": "API key not configured"}
 
         try:
             data = await self.get(f"/shodan/host/{ip}", params={
-                "key": settings.shodan_api_key,
+                "key": self.api_key,
             })
             return {
                 "ip": data.get("ip_str", ip),
