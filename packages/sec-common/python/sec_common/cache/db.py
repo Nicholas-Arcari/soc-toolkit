@@ -1,11 +1,15 @@
+"""SQLite cache for external API responses.
+
+Lazy-initialized so sec-common can live independently of any app's config
+module. Apps call `configure(database_url, echo=...)` at startup before
+triggering `init_db()` or any `get_cached`/`set_cached` call.
+"""
 import asyncio
 import json
 import time
 
-from sqlalchemy import String, Text, create_engine
+from sqlalchemy import Engine, String, Text, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
-
-from config import settings
 
 
 class Base(DeclarativeBase):
@@ -24,21 +28,35 @@ class CacheEntry(Base):
     ttl: Mapped[int] = mapped_column(nullable=False, default=3600)
 
 
-# Use sync engine for SQLite (simpler, no async overhead needed for cache)
-engine = create_engine(
-    settings.database_url.replace("+aiosqlite", ""),
-    echo=settings.is_development,
-)
-SessionLocal = sessionmaker(bind=engine)
+_engine: Engine | None = None
+_SessionLocal: sessionmaker | None = None
+
+
+def configure(database_url: str, echo: bool = False) -> None:
+    """Bind the cache module to a SQLAlchemy engine.
+
+    Must be called once at app startup. The aiosqlite driver is stripped
+    because the cache uses a sync engine (SQLite DDL is fast and the cache
+    doesn't benefit from async).
+    """
+    global _engine, _SessionLocal
+    _engine = create_engine(database_url.replace("+aiosqlite", ""), echo=echo)
+    _SessionLocal = sessionmaker(bind=_engine)
+
+
+def _require_session_factory() -> sessionmaker:
+    if _SessionLocal is None:
+        raise RuntimeError(
+            "sec_common.cache.db.configure() must be called before using the cache"
+        )
+    return _SessionLocal
 
 
 async def init_db() -> None:
-    """Initialize the database and create tables.
-
-    Runs the sync create_all in a thread to avoid blocking the async event
-    loop during startup - SQLite DDL is fast but should not block coroutines.
-    """
-    await asyncio.to_thread(Base.metadata.create_all, bind=engine)
+    """Create tables. Idempotent. Requires configure() to have been called."""
+    if _engine is None:
+        raise RuntimeError("configure() must be called before init_db()")
+    await asyncio.to_thread(Base.metadata.create_all, bind=_engine)
 
 
 def get_cached(service: str, query_type: str, query_value: str) -> dict | None:
@@ -48,6 +66,7 @@ def get_cached(service: str, query_type: str, query_value: str) -> dict | None:
     with 10 URLs would burn 10 VirusTotal requests (out of 4/min). With
     cache, repeated analysis of the same IOC costs zero API calls.
     """
+    SessionLocal = _require_session_factory()  # noqa: N806 - SQLAlchemy sessionmaker convention
     with SessionLocal() as session:
         entry = (
             session.query(CacheEntry)
@@ -74,6 +93,7 @@ def set_cached(
     ttl: int = 3600,
 ) -> None:
     """Cache an API response."""
+    SessionLocal = _require_session_factory()  # noqa: N806 - SQLAlchemy sessionmaker convention
     with SessionLocal() as session:
         existing = (
             session.query(CacheEntry)
