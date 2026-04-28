@@ -2,8 +2,9 @@ import re
 from typing import Any
 from urllib.parse import urlparse
 
-from integrations.urlscan import URLScanClient
-from integrations.virustotal import VirusTotalClient
+from sec_common.integrations import URLScanClient, VirusTotalClient
+
+from config import settings
 
 
 async def check_urls(raw_input: str, single: bool = False) -> list[dict]:
@@ -17,8 +18,8 @@ async def check_urls(raw_input: str, single: bool = False) -> list[dict]:
         return []
 
     results = []
-    vt = VirusTotalClient()
-    urlscan = URLScanClient()
+    vt = VirusTotalClient(api_key=settings.get_api_key("virustotal"))
+    urlscan = URLScanClient(api_key=settings.get_api_key("urlscan"))
 
     # Cap at 20 URLs to stay within VirusTotal free tier (4 req/min).
     # A real phishing email rarely has more than 5-10 unique URLs anyway
