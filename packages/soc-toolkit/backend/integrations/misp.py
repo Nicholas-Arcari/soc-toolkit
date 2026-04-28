@@ -11,9 +11,9 @@ from __future__ import annotations
 from typing import Any
 
 import httpx
+from sec_common.http import BaseAPIClient
 
 from config import settings
-from integrations.base_client import BaseAPIClient
 
 # MISP accepts many attribute "types" - we map the IOC-extractor kinds to the
 # type names MISP expects in the /attributes/restSearch payload
