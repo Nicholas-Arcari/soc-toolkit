@@ -1,7 +1,7 @@
 import email
 from email import policy
 
-from core.ioc.text_extractor import extract_from_text
+from sec_common.ioc import extract_from_text
 
 
 def extract_from_email(raw_email: str) -> list[dict]:
