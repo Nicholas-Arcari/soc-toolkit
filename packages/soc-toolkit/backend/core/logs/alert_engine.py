@@ -1,6 +1,8 @@
 import logging
 
-from integrations.abuseipdb import AbuseIPDBClient
+from sec_common.integrations import AbuseIPDBClient
+
+from config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -8,7 +10,7 @@ logger = logging.getLogger(__name__)
 async def generate_alerts(analysis: dict) -> list[dict]:
     """Generate alerts with threat intelligence enrichment."""
     alerts = []
-    abuseipdb = AbuseIPDBClient()
+    abuseipdb = AbuseIPDBClient(api_key=settings.get_api_key("abuseipdb"))
 
     # Alert on brute force IPs
     for ip_info in analysis.get("top_ips", []):
