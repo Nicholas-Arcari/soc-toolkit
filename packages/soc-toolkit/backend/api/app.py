@@ -1,18 +1,40 @@
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from sec_common.auth import (
+    ApiKeyMiddleware,
+    JwtAuthMiddleware,
+    UserStore,
+    build_auth_router,
+)
+from sec_common.cache import configure as configure_cache
+from sec_common.cache import init_db
+from sec_common.logging import RequestIDMiddleware, configure_logging
+from sec_common.metrics import (
+    PrometheusMiddleware,
+    build_metrics_router,
+    new_registry,
+)
 
 from api.middleware.error_handler import ErrorHandlerMiddleware
 from api.middleware.rate_limiter import RateLimitMiddleware
-from api.routes import ioc, logs, misp, phishing, reports, sigma, yara
-from cache.db import init_db
+from api.routes import ioc, logs, misp, osint_pivot, phishing, reports, sigma, yara
 from config import settings
+
+configure_logging(
+    service="soc-toolkit",
+    level=os.environ.get("LOG_LEVEL", "INFO"),
+    json=os.environ.get("LOG_FORMAT", "json").lower() != "console",
+)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    configure_cache(settings.database_url, echo=settings.is_development)
     await init_db()
     yield
 
@@ -28,9 +50,25 @@ app = FastAPI(
 )
 
 # Middleware order matters: error handler wraps everything, rate limiter
-# runs before route handlers, CORS must be outermost for preflight requests
+# runs before route handlers, CORS must be outermost for preflight requests.
+# RequestIDMiddleware registers last so it runs earliest on the way in -
+# the request id must be bound into contextvars before anything else logs.
+_metrics_registry = new_registry()
+
 app.add_middleware(ErrorHandlerMiddleware)
+# JWT (per-user) runs inside ApiKey (shared-secret proxy gate). Both are
+# no-ops when unset, so the default "local dev, no auth" posture holds.
+app.add_middleware(JwtAuthMiddleware, secret=settings.auth_secret or None)
+app.add_middleware(ApiKeyMiddleware, api_key=settings.api_key)
 app.add_middleware(RateLimitMiddleware)
+# Prometheus sits outside rate-limiting so scrapes don't burn budget,
+# and inside RequestIDMiddleware so the per-request id binds before
+# we record latency (nice for correlating a long /metrics-lined
+# outlier back to a log line).
+app.add_middleware(
+    PrometheusMiddleware, service="soc-toolkit", registry=_metrics_registry
+)
+app.add_middleware(RequestIDMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -39,9 +77,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Auth router is only mounted when per-user auth is configured -
+# otherwise first-run setup would silently create users that never get
+# validated by the (no-op) JwtAuthMiddleware.
+if settings.has_auth():
+    _user_store = UserStore(Path(settings.auth_users_file))
+    app.include_router(
+        build_auth_router(
+            store=_user_store,
+            secret=settings.auth_secret,
+            ttl_minutes=settings.auth_token_ttl_minutes,
+        ),
+        prefix="/api/auth",
+        tags=["Authentication"],
+    )
+
+app.include_router(build_metrics_router(_metrics_registry))
+
 app.include_router(phishing.router, prefix="/api/phishing", tags=["Phishing Analyzer"])
 app.include_router(logs.router, prefix="/api/logs", tags=["Log Analyzer"])
 app.include_router(ioc.router, prefix="/api/ioc", tags=["IOC Extractor"])
+app.include_router(osint_pivot.router, prefix="/api/osint", tags=["OSINT Pivot"])
 app.include_router(yara.router, prefix="/api/yara", tags=["YARA Scanner"])
 app.include_router(misp.router, prefix="/api/misp", tags=["MISP"])
 app.include_router(sigma.router, prefix="/api/sigma", tags=["Sigma Rules"])
@@ -52,7 +108,7 @@ app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 async def health_check() -> dict:
     configured_apis = [
         service
-        for service in ["virustotal", "abuseipdb", "shodan", "urlscan", "otx"]
+        for service in ["virustotal", "abuseipdb", "shodan", "urlscan", "otx", "securitytrails"]
         if settings.has_api_key(service)
     ]
     if settings.has_misp():
