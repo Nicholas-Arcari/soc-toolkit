@@ -2,9 +2,10 @@ import email
 import hashlib
 from email import policy
 
+from sec_common.integrations import MalwareBazaarClient, VirusTotalClient
+
+from config import settings
 from core.yara.scanner import get_scanner
-from integrations.malwarebazaar import MalwareBazaarClient
-from integrations.virustotal import VirusTotalClient
 
 
 async def scan_attachment(raw_email: str) -> list[dict]:
@@ -90,7 +91,7 @@ def _has_double_extension(filename: str) -> bool:
 async def _check_virustotal(sha256: str) -> dict | None:
     """Check file hash against VirusTotal."""
     try:
-        vt = VirusTotalClient()
+        vt = VirusTotalClient(api_key=settings.get_api_key("virustotal"))
         return await vt.check_hash(sha256)
     except Exception:
         return {"error": "API unavailable"}
