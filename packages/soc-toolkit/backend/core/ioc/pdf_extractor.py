@@ -1,6 +1,5 @@
 import fitz  # PyMuPDF
-
-from core.ioc.text_extractor import extract_from_text
+from sec_common.ioc import extract_from_text
 
 
 def extract_from_pdf(content: bytes) -> list[dict]:
