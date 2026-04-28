@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Body
 from pydantic import BaseModel
+from sec_common.ioc import extract_from_text
 
-from core.ioc.text_extractor import extract_from_text
 from core.misp.enricher import enrich_iocs
 from integrations.misp import MISPClient
 
