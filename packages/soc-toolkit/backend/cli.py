@@ -4,9 +4,9 @@ from pathlib import Path
 import typer
 from rich.console import Console
 from rich.table import Table
+from sec_common.ioc import extract_from_text
 
 from core.ioc.pdf_extractor import extract_from_pdf
-from core.ioc.text_extractor import extract_from_text
 from core.logs.ssh_analyzer import analyze_ssh_logs
 from core.logs.web_analyzer import analyze_web_logs
 from core.phishing.attachment_scanner import scan_attachment
