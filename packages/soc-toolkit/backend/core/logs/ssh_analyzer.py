@@ -108,7 +108,12 @@ def _categorize_ip(attempt_count: int) -> str:
 
 
 def _build_timeline(events: list[dict]) -> list[dict]:
-    """Build an hourly timeline of events."""
+    """Build an hourly timeline of events, filling gaps between min/max hours.
+
+    Gap-filling with zero-count entries makes the chart render as a continuous
+    timeline rather than just the active hours, which communicates quiet periods
+    as meaningful signal.
+    """
     hourly: Counter[str] = Counter()
     for event in events:
         ts = event.get("timestamp")
@@ -117,7 +122,11 @@ def _build_timeline(events: list[dict]) -> list[dict]:
             if hour_match:
                 hourly[hour_match.group(1)] += 1
 
+    if not hourly:
+        return []
+
+    hours_int = sorted(int(h) for h in hourly)
     return [
-        {"hour": hour, "count": count}
-        for hour, count in sorted(hourly.items())
+        {"hour": f"{h:02d}", "count": hourly.get(f"{h:02d}", 0)}
+        for h in range(hours_int[0], hours_int[-1] + 1)
     ]
