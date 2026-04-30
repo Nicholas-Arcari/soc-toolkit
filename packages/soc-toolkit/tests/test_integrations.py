@@ -3,19 +3,17 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
-from integrations.virustotal import VirusTotalClient
-from integrations.abuseipdb import AbuseIPDBClient
+from sec_common.integrations import AbuseIPDBClient, VirusTotalClient
 
 
 @pytest.fixture
 def vt_client():
-    return VirusTotalClient()
+    return VirusTotalClient(api_key="test_key")
 
 
 @pytest.fixture
 def abuse_client():
-    return AbuseIPDBClient()
+    return AbuseIPDBClient(api_key="test_key")
 
 
 @pytest.mark.asyncio
@@ -38,25 +36,18 @@ async def test_virustotal_check_hash_found(vt_client):
     }
 
     with patch.object(vt_client, "get", new_callable=AsyncMock, return_value=mock_response):
-        with patch("integrations.virustotal.settings") as mock_settings:
-            mock_settings.has_api_key.return_value = True
-            mock_settings.virustotal_api_key = "test_key"
+        result = await vt_client.check_hash("abc123def456")
 
-            result = await vt_client.check_hash("abc123def456")
-
-            assert result["found"] is True
-            assert result["positives"] == 15
-            assert result["threat_label"] == "trojan.generic"
+        assert result["found"] is True
+        assert result["positives"] == 15
+        assert result["threat_label"] == "trojan.generic"
 
 
 @pytest.mark.asyncio
-async def test_virustotal_no_api_key(vt_client):
-    with patch("integrations.virustotal.settings") as mock_settings:
-        mock_settings.has_api_key.return_value = False
-
-        result = await vt_client.check_hash("abc123")
-
-        assert result.get("error") == "API key not configured"
+async def test_virustotal_no_api_key():
+    client = VirusTotalClient(api_key="")
+    result = await client.check_hash("abc123")
+    assert result.get("error") == "API key not configured"
 
 
 @pytest.mark.asyncio
@@ -77,24 +68,17 @@ async def test_abuseipdb_check_ip(abuse_client):
     }
 
     with patch.object(abuse_client, "get", new_callable=AsyncMock, return_value=mock_response):
-        with patch("integrations.abuseipdb.settings") as mock_settings:
-            mock_settings.has_api_key.return_value = True
-            mock_settings.abuseipdb_api_key = "test_key"
+        result = await abuse_client.check_ip("45.33.32.156")
 
-            result = await abuse_client.check_ip("45.33.32.156")
-
-            assert result["ip"] == "45.33.32.156"
-            assert result["abuse_score"] == 85
-            assert result["country"] == "US"
-            assert result["total_reports"] == 142
-            assert result["is_tor"] is False
+        assert result["ip"] == "45.33.32.156"
+        assert result["abuse_score"] == 85
+        assert result["country"] == "US"
+        assert result["total_reports"] == 142
+        assert result["is_tor"] is False
 
 
 @pytest.mark.asyncio
-async def test_abuseipdb_no_api_key(abuse_client):
-    with patch("integrations.abuseipdb.settings") as mock_settings:
-        mock_settings.has_api_key.return_value = False
-
-        result = await abuse_client.check_ip("1.2.3.4")
-
-        assert result.get("error") == "API key not configured"
+async def test_abuseipdb_no_api_key():
+    client = AbuseIPDBClient(api_key="")
+    result = await client.check_ip("1.2.3.4")
+    assert result.get("error") == "API key not configured"
