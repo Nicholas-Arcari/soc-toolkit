@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Mail, AlertTriangle, CheckCircle, ShieldAlert, ShieldCheck } from "lucide-react";
-import FileUpload from "../components/common/FileUpload";
-import SeverityBadge from "../components/common/SeverityBadge";
+import { FileUpload, SeverityBadge } from "@sec-toolkit/common/components";
 import { analyzePhishing, type PhishingResult } from "../api/client";
 
 export default function PhishingAnalyzer() {
@@ -15,7 +14,7 @@ export default function PhishingAnalyzer() {
     try {
       const data = await analyzePhishing(file);
       setResult(data);
-    } catch (err) {
+    } catch {
       setError("Analysis failed. Make sure the backend is running.");
     } finally {
       setLoading(false);
