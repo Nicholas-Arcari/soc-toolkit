@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import FileUpload from "../components/common/FileUpload";
-import SeverityBadge from "../components/common/SeverityBadge";
+import { FileUpload, SeverityBadge } from "@sec-toolkit/common/components";
 import { analyzeLogs, type LogAnalysisResult } from "../api/client";
 
 export default function LogAnalyzer() {
@@ -99,7 +98,7 @@ export default function LogAnalyzer() {
                     contentStyle={{ background: "#1e293b", border: "1px solid #334155", borderRadius: "8px" }}
                     labelStyle={{ color: "#e2e8f0" }}
                   />
-                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} isAnimationActive={false} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
