@@ -1,4 +1,4 @@
-from core.ioc.text_extractor import extract_from_text
+from sec_common.ioc import extract_from_text
 
 
 SAMPLE_THREAT_REPORT = """
