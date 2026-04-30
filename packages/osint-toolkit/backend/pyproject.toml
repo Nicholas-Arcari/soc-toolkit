@@ -1,0 +1,85 @@
+[tool.poetry]
+name = "osint-toolkit"
+version = "0.1.0"
+description = "Attack surface management + investigative OSINT - stateful, target-based companion to soc-toolkit"
+authors = ["Nicholas Arcari <arcari.nicholas0@gmail.com>"]
+license = "MIT"
+readme = "../../../README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+sec-common = { path = "../../sec-common/python", develop = true }
+fastapi = "^0.115.0"
+uvicorn = { extras = ["standard"], version = "^0.34.0" }
+pydantic = "^2.10.0"
+pydantic-settings = "^2.7.0"
+sqlalchemy = "^2.0.0"
+alembic = "^1.14.0"
+aiosqlite = "^0.20.0"
+# Optional async Postgres driver. SQLite remains the default for
+# zero-configuration installs; deployments with more than a handful of
+# targets should switch to Postgres via OSINT_DATABASE_URL=postgresql+asyncpg://...
+asyncpg = "^0.30.0"
+httpx = "^0.28.0"
+python-multipart = "^0.0.18"
+python-dotenv = "^1.0.0"
+apscheduler = "^3.11.0"
+# Pillow for EXIF parsing - pure-Python dep, avoids the exiftool binary
+# requirement that pyexiftool pulls in.
+pillow = "^11.0.0"
+# DNS mapping - async resolver for A/AAAA/MX/NS/TXT, SPF/DMARC parsing.
+dnspython = "^2.7.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.0"
+pytest-asyncio = "^0.24.0"
+pytest-cov = "^6.0.0"
+respx = "^0.22.0"
+ruff = "^0.8.0"
+mypy = "^1.13.0"
+bandit = "^1.8.0"
+piexif = "^1.1.3"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+disallow_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+strict_equality = true
+no_implicit_optional = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["../tests"]
+
+[tool.coverage.run]
+source = ["core", "api", "db"]
+omit = ["*/tests/*", "*/__init__.py", "*/migrations/*"]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "migrations"]
+skips = ["B101"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
