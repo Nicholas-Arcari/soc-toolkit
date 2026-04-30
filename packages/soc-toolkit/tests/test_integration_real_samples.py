@@ -16,7 +16,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from core.ioc.text_extractor import extract_from_text
+from sec_common.ioc import extract_from_text
+
 from core.logs.ssh_analyzer import analyze_ssh_logs
 from core.logs.windows_analyzer import analyze_windows_logs
 from core.misp.enricher import enrich_iocs
