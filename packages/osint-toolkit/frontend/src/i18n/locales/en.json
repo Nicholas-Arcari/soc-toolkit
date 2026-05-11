@@ -1,0 +1,43 @@
+{
+  "sidebar": {
+    "appName": "OSINT Toolkit",
+    "version": "v0.1.0 · passive",
+    "nav": {
+      "dashboard": "Dashboard",
+      "targets": "Targets",
+      "investigate": "Investigate"
+    },
+    "language": "Language"
+  },
+  "targets": {
+    "heading": "Targets",
+    "subheading": "Each target is a perimeter you've been authorized to scan.",
+    "newTarget": "New target",
+    "loading": "Loading…",
+    "empty": "No targets yet. Click \"New target\" to register the first authorized perimeter.",
+    "deleteConfirm": "Delete this target and all its discovered data?",
+    "deleteAria": "Delete {{name}}",
+    "columns": {
+      "name": "Name",
+      "scope": "Scope",
+      "owner": "Owner",
+      "created": "Created"
+    },
+    "form": {
+      "heading": "New target",
+      "name": "Name",
+      "namePlaceholder": "Acme Corp - public assets",
+      "ownerEmail": "Owner email (optional)",
+      "ownerEmailPlaceholder": "sec@acme.example",
+      "scopeDomains": "Scope domains (comma or newline separated)",
+      "scopePlaceholder": "acme.example\nacme.test",
+      "authCheckbox": {
+        "title": "I am authorized to scan this perimeter.",
+        "body": "I have written authorization from the asset owner, or I own these assets, or they are explicit bug-bounty scope. I understand the API will refuse this request without this box checked."
+      },
+      "cancel": "Cancel",
+      "submit": "Create target",
+      "submitting": "Creating…"
+    }
+  }
+}
