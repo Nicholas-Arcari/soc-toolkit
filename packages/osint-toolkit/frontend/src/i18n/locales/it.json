@@ -1,0 +1,43 @@
+{
+  "sidebar": {
+    "appName": "OSINT Toolkit",
+    "version": "v0.1.0 · passivo",
+    "nav": {
+      "dashboard": "Dashboard",
+      "targets": "Obiettivi",
+      "investigate": "Indagine"
+    },
+    "language": "Lingua"
+  },
+  "targets": {
+    "heading": "Obiettivi",
+    "subheading": "Ogni obiettivo è un perimetro per il quale sei stato autorizzato a eseguire scansioni.",
+    "newTarget": "Nuovo obiettivo",
+    "loading": "Caricamento…",
+    "empty": "Nessun obiettivo presente. Clicca \"Nuovo obiettivo\" per registrare il primo perimetro autorizzato.",
+    "deleteConfirm": "Eliminare questo obiettivo e tutti i dati scoperti?",
+    "deleteAria": "Elimina {{name}}",
+    "columns": {
+      "name": "Nome",
+      "scope": "Scope",
+      "owner": "Proprietario",
+      "created": "Creato"
+    },
+    "form": {
+      "heading": "Nuovo obiettivo",
+      "name": "Nome",
+      "namePlaceholder": "Acme Corp - asset pubblici",
+      "ownerEmail": "Email proprietario (opzionale)",
+      "ownerEmailPlaceholder": "sec@acme.example",
+      "scopeDomains": "Domini nello scope (separati da virgola o a capo)",
+      "scopePlaceholder": "acme.example\nacme.test",
+      "authCheckbox": {
+        "title": "Sono autorizzato a eseguire scansioni su questo perimetro.",
+        "body": "Dispongo di autorizzazione scritta dal proprietario degli asset, oppure sono io stesso il proprietario, oppure rientrano in un programma di bug bounty esplicito. Sono consapevole che l'API rifiuterà questa richiesta senza aver spuntato questa casella."
+      },
+      "cancel": "Annulla",
+      "submit": "Crea obiettivo",
+      "submitting": "Creazione in corso…"
+    }
+  }
+}
