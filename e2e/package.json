@@ -1,0 +1,15 @@
+{
+  "name": "sec-toolkit-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "End-to-end browser smoke tests for sec-toolkit (SOC + OSINT).",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "install-browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
