@@ -44,7 +44,7 @@ def test_wrong_secret_raises() -> None:
 
 
 def test_expired_token_raises() -> None:
-    past = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=1)
+    past = dt.datetime.now(dt.UTC) - dt.timedelta(hours=1)
     tok = encode_token(
         subject="x", username="u", role="r", secret="s", ttl_minutes=1, now=past
     )

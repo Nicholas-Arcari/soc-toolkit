@@ -9,8 +9,8 @@ import time
 
 import pytest
 
-from sec_common.cache import get_cached, set_cached
 from sec_common.cache import db as cache_db
+from sec_common.cache import get_cached, set_cached
 
 
 def test_set_then_get_returns_payload() -> None:
