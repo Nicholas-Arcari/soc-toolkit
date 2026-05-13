@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-04-22T14:45:02Z",
+    "event_type": "http_request",
+    "source_ip": "198.51.100.77",
+    "method": "GET",
+    "path": "/products?id=1' UNION SELECT username,password FROM users--",
+    "status": 500,
+    "user_agent": "sqlmap/1.8.0",
+    "message": "suspicious query parameters detected"
+  }
+]
