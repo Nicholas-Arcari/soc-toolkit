@@ -1,0 +1,14 @@
+[
+  {
+    "timestamp": "2026-04-22T09:14:52Z",
+    "event_id": 7045,
+    "event_type": "service_install",
+    "host": "WIN-DC01",
+    "user": "SYSTEM",
+    "service_name": "UpdateSvc",
+    "image_path": "C:\\Windows\\Temp\\upd.exe",
+    "service_type": "kernel driver",
+    "start_type": "auto start",
+    "message": "A new service was installed in the system."
+  }
+]
