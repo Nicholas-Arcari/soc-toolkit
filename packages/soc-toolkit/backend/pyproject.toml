@@ -36,7 +36,7 @@ geoip2 = "^4.8.0"
 
 # CLI
 typer = "^0.15.0"
-rich = "^13.9.0"
+rich = ">=13.9,<16.0"
 
 # YARA-X - Rust rewrite of YARA from VirusTotal. Pure-Python wheels mean no
 # libyara C dependency in the Docker image or CI runners.
