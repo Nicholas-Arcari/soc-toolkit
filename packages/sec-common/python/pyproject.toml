@@ -27,7 +27,7 @@ starlette = ">=0.37.0,<1"
 # JWT auth + password hashing. PyJWT is the canonical library; bcrypt
 # (direct, no passlib) keeps the transitive tree small.
 pyjwt = "^2.10.0"
-bcrypt = "^4.2.0"
+bcrypt = ">=4.2,<6.0"
 prometheus-client = "^0.21.0"
 # Auth router + Prometheus instrumentation use APIRouter; keeping the
 # dep here avoids forcing every consuming app to re-export a router
