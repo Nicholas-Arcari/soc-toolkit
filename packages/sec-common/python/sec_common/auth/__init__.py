@@ -19,6 +19,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp
 
+from .avatars import AvatarStorage, LocalAvatarStorage
 from .jwt import TokenClaims, TokenError, decode_token, encode_token
 from .middleware import JwtAuthMiddleware
 from .passwords import hash_password, verify_password
@@ -76,8 +77,10 @@ class ApiKeyMiddleware(BaseHTTPMiddleware):
 
 __all__ = [
     "ApiKeyMiddleware",
+    "AvatarStorage",
     "Credentials",
     "JwtAuthMiddleware",
+    "LocalAvatarStorage",
     "LoginResponse",
     "TokenClaims",
     "TokenError",
