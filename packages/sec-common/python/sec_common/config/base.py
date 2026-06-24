@@ -8,6 +8,8 @@ SOC and OSINT toolkits pick them up from a single `.env`.
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from sec_common.runtime_keys import request_api_key_override
+
 
 class BaseAppSettings(BaseSettings):
     # Subclasses should override model_config to set env_file; this default
@@ -54,9 +56,44 @@ class BaseAppSettings(BaseSettings):
     # endpoint - after which signup is disabled and only login works.
     auth_secret: str = ""
     auth_token_ttl_minutes: int = 60
-    # Relative path resolved against the backend working directory -
-    # ends up alongside the SQLite cache/DB in the `data/` volume.
-    auth_users_file: str = "data/users.json"
+    # Relative path resolved against the backend working directory - ends up
+    # alongside the SQLite cache/DB in the `data/` volume. SQLite-backed; a
+    # legacy users.json in the same dir is imported once on first start.
+    auth_users_file: str = "data/users.db"
+    # Registration posture. "single-tenant" (default) keeps the first-run
+    # admin-only flow: the first signup becomes admin, every later signup
+    # is rejected - the right call for a self-hosted clone. "saas" opens
+    # self-registration: each account after the first admin is a trial
+    # user that expires after `trial_days`. Only meaningful on the hosted
+    # instance you operate; a clone has no reason to turn it on.
+    auth_mode: str = "single-tenant"
+    trial_days: int = 7
+    # Directory (relative to the backend working dir) for uploaded profile
+    # images - sits next to users.json in the data/ volume. Local-disk
+    # storage today; swappable for object storage without touching routes.
+    avatar_dir: str = "data/avatars"
+    # License authority for SaaS paid plans (the separate license-server).
+    # Empty = licensing disabled (the right posture for a self-hosted clone).
+    # The hosted SaaS instance points these at its license-server.
+    license_server_url: str = ""
+    license_server_api_key: str = ""
+    # Email delivery for verification + password reset. Empty smtp_host keeps
+    # dev mode (links are logged via ConsoleEmailSender, not sent).
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "no-reply@soc-toolkit.local"
+    smtp_starttls: bool = True
+    # Public base URL of the frontend, used to build verification/reset links.
+    app_base_url: str = "http://localhost:5173"
+    # Brute-force throttle on /login: lock a username after this many failed
+    # attempts within the rolling window (seconds).
+    login_max_attempts: int = 5
+    login_window_seconds: int = 900
+    # Per-IP cap on the outbound-fetch endpoints (link tracer, website
+    # fingerprint) so the server can't be driven as a scanning proxy.
+    outbound_fetch_per_minute: int = 10
 
     def has_auth(self) -> bool:
         """Per-user auth is enabled when a signing secret is configured.
@@ -66,27 +103,39 @@ class BaseAppSettings(BaseSettings):
         """
         return bool(self.auth_secret) and len(self.auth_secret) >= 32
 
+    def has_smtp(self) -> bool:
+        """Real email delivery is configured (otherwise dev/console mode)."""
+        return bool(self.smtp_host)
+
     @property
     def is_development(self) -> bool:
         return self.app_env == "development"
 
     def has_api_key(self, service: str) -> bool:
-        """True when a configured key exists and isn't a placeholder.
+        """True when a usable key exists for ``service``.
 
-        The `your_*` prefix is the convention in .env.example - treating
-        those as unset prevents shipping a half-configured instance.
+        A per-request override (a SaaS user's own key, supplied via header)
+        counts; otherwise the configured env key, ignoring the `your_*`
+        placeholder convention from .env.example.
         """
+        if request_api_key_override(service):
+            return True
         key = getattr(self, f"{service}_api_key", "")
         return bool(key) and not key.startswith("your_")
 
     def get_api_key(self, service: str) -> str:
         """Effective API key, or empty string when unset/placeholder.
 
-        Lets call sites pass the key directly to injected clients without
-        re-checking `has_api_key` - the client just sees "" when nothing
-        real is configured.
+        A per-request override wins over the env key, so a SaaS user who
+        entered their own keys in the UI uses those without the server ever
+        persisting them. Call sites pass the result straight to clients.
         """
-        return getattr(self, f"{service}_api_key", "") if self.has_api_key(service) else ""
+        override = request_api_key_override(service)
+        if override:
+            return override
+        if not self.has_api_key(service):
+            return ""
+        return getattr(self, f"{service}_api_key", "")
 
     def has_censys(self) -> bool:
         """Censys needs both ID and secret - convenience check."""
