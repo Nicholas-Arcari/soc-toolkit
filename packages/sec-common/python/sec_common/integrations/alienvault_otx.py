@@ -77,3 +77,38 @@ class AlienVaultOTXClient(BaseAPIClient):
             }
         except Exception:
             return {"pulse_count": 0, "error": "lookup failed"}
+
+    async def passive_dns(self, indicator: str, kind: str = "domain") -> list[dict]:
+        """Passive DNS rows for a domain or IPv4.
+
+        Shaped like the other pDNS sources (``value`` / ``record_type`` /
+        ``first_seen`` / ``last_seen`` / ``source``) so the pivot engine can
+        concatenate and dedupe them. For a domain the value is the resolved
+        address; for an IP it's the hostname that resolved to it (the "other
+        side", matching MnemonicPdnsClient).
+        """
+        if not self.api_key:
+            return []
+        is_ip = kind.strip().lower() in {"ip", "ipv4", "ipv6"}
+        section = "IPv4" if is_ip else "domain"
+        try:
+            data = await self.get(
+                f"/indicators/{section}/{indicator}/passive_dns"
+            )
+        except Exception:
+            return []
+
+        rows: list[dict] = []
+        for rec in data.get("passive_dns", []) or []:
+            value = str((rec.get("hostname") if is_ip else rec.get("address")) or "")
+            if not value:
+                continue
+            rows.append({
+                "value": value,
+                "record_type": str(rec.get("record_type", "")).upper(),
+                "first_seen": str(rec.get("first", "")),
+                "last_seen": str(rec.get("last", "")),
+                "organizations": [],
+                "source": "otx",
+            })
+        return rows
