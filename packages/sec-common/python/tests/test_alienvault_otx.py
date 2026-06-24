@@ -72,3 +72,50 @@ async def test_upstream_failure_returns_structured_error() -> None:
     result = await _Fast(api_key="k").check_ip("1.2.3.4")
     assert result["pulse_count"] == 0
     assert result["error"] == "lookup failed"
+
+
+@pytest.mark.asyncio
+async def test_passive_dns_no_key_returns_empty() -> None:
+    assert await AlienVaultOTXClient().passive_dns("e.test") == []
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_passive_dns_domain_uses_resolved_address() -> None:
+    respx.get(
+        "https://otx.alienvault.com/api/v1/indicators/domain/evil.test/passive_dns"
+    ).mock(return_value=httpx.Response(200, json={
+        "passive_dns": [
+            {
+                "address": "1.2.3.4",
+                "hostname": "evil.test",
+                "record_type": "A",
+                "first": "2024-01-01",
+                "last": "2024-02-01",
+            },
+        ]
+    }))
+    rows = await AlienVaultOTXClient(api_key="k").passive_dns("evil.test", "domain")
+    assert rows == [{
+        "value": "1.2.3.4",
+        "record_type": "A",
+        "first_seen": "2024-01-01",
+        "last_seen": "2024-02-01",
+        "organizations": [],
+        "source": "otx",
+    }]
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_passive_dns_ip_uses_hostname() -> None:
+    respx.get(
+        "https://otx.alienvault.com/api/v1/indicators/IPv4/1.2.3.4/passive_dns"
+    ).mock(return_value=httpx.Response(200, json={
+        "passive_dns": [
+            {"address": "1.2.3.4", "hostname": "evil.test", "record_type": "A"},
+        ]
+    }))
+    rows = await AlienVaultOTXClient(api_key="k").passive_dns("1.2.3.4", "ip")
+    assert rows[0]["value"] == "evil.test"
+    assert rows[0]["source"] == "otx"
