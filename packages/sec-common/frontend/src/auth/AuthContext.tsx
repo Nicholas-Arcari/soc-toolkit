@@ -30,9 +30,25 @@ type AuthContextValue = {
   // this window to avoid the signup form flashing for already-set-up
   // installs.
   loading: boolean;
+  // Registration posture reported by /setup-required. "saas" turns on the
+  // self-service register form + trial; "single-tenant" keeps it hidden.
+  mode: "single-tenant" | "saas";
+  // True when the backend would accept a /signup right now (empty store,
+  // or saas mode). Drives whether the login page offers a register toggle.
+  canRegister: boolean;
   login: (username: string, password: string) => Promise<void>;
-  signup: (username: string, password: string) => Promise<void>;
+  signup: (username: string, password: string, email?: string) => Promise<void>;
   logout: () => void;
+  // Re-fetch /me and update the persisted session (e.g. after an avatar
+  // change) so the UI reflects server state without a full reload.
+  refreshUser: () => Promise<void>;
+  // Re-send the email-verification link to the signed-in user.
+  resendVerification: () => Promise<void>;
+  // Start a password reset for an email; complete one with a token.
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string) => Promise<void>;
+  // Redeem a license key; updates the session's plan in place.
+  redeemLicense: (key: string) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -47,6 +63,8 @@ export function AuthProvider({ client, scope, children }: AuthProviderProps) {
   const [state, setState] = useState<AuthState | null>(() => readAuth(scope));
   const [setupRequired, setSetupRequired] = useState(false);
   const [authEnabled, setAuthEnabled] = useState(true);
+  const [mode, setMode] = useState<"single-tenant" | "saas">("single-tenant");
+  const [canRegister, setCanRegister] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Attach + clear interceptors once, keyed on the client instance.
@@ -91,6 +109,8 @@ export function AuthProvider({ client, scope, children }: AuthProviderProps) {
         if (!cancelled) {
           setAuthEnabled(true);
           setSetupRequired(Boolean(res.data?.setup_required));
+          setMode(res.data?.mode === "saas" ? "saas" : "single-tenant");
+          setCanRegister(Boolean(res.data?.can_register));
         }
       } catch (err: unknown) {
         if (cancelled) return;
@@ -128,8 +148,12 @@ export function AuthProvider({ client, scope, children }: AuthProviderProps) {
   );
 
   const signup = useCallback(
-    async (username: string, password: string) => {
-      const res = await client.post("/auth/signup", { username, password });
+    async (username: string, password: string, email = "") => {
+      const res = await client.post("/auth/signup", {
+        username,
+        password,
+        email,
+      });
       const next: AuthState = {
         token: res.data.token,
         user: res.data.user as StoredUser,
@@ -148,9 +172,94 @@ export function AuthProvider({ client, scope, children }: AuthProviderProps) {
     setState(null);
   }, [client, scope]);
 
+  const refreshUser = useCallback(async () => {
+    const current = readAuth(scope);
+    if (!current) return;
+    const res = await client.get("/auth/me");
+    const next: AuthState = {
+      token: current.token,
+      user: res.data as StoredUser,
+    };
+    writeAuth(scope, next);
+    setState(next);
+  }, [client, scope]);
+
+  const resendVerification = useCallback(async () => {
+    await client.post("/auth/resend-verification");
+  }, [client]);
+
+  const forgotPassword = useCallback(
+    async (email: string) => {
+      await client.post("/auth/forgot-password", { email });
+    },
+    [client],
+  );
+
+  const resetPassword = useCallback(
+    async (token: string, password: string) => {
+      await client.post("/auth/reset-password", { token, password });
+    },
+    [client],
+  );
+
+  const redeemLicense = useCallback(
+    async (key: string) => {
+      const current = readAuth(scope);
+      if (!current) return;
+      const res = await client.post("/auth/redeem-license", { key });
+      const next: AuthState = {
+        token: current.token,
+        user: res.data as StoredUser,
+      };
+      writeAuth(scope, next);
+      setState(next);
+    },
+    [client, scope],
+  );
+
+  // The api client fires this window event after awarding XP; pull the
+  // fresh user so the XP bar / level reflect it without a page reload.
+  useEffect(() => {
+    const handler = () => {
+      void refreshUser();
+    };
+    window.addEventListener("sectk:user-updated", handler);
+    return () => window.removeEventListener("sectk:user-updated", handler);
+  }, [refreshUser]);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ state, setupRequired, authEnabled, loading, login, signup, logout }),
-    [state, setupRequired, authEnabled, loading, login, signup, logout],
+    () => ({
+      state,
+      setupRequired,
+      authEnabled,
+      mode,
+      canRegister,
+      loading,
+      login,
+      signup,
+      logout,
+      refreshUser,
+      resendVerification,
+      forgotPassword,
+      resetPassword,
+      redeemLicense,
+    }),
+    [
+      state,
+      setupRequired,
+      authEnabled,
+      mode,
+      canRegister,
+      loading,
+      login,
+      signup,
+      logout,
+      refreshUser,
+      resendVerification,
+      forgotPassword,
+      resetPassword,
+      redeemLicense,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
