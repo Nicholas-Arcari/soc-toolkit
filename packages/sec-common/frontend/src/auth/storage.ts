@@ -9,6 +9,21 @@ export type StoredUser = {
   id: string;
   username: string;
   role: string;
+  // SaaS subscription fields. Optional so single-tenant tokens (which
+  // never carry them) and older persisted sessions stay valid.
+  plan?: string;
+  trial_ends_at?: string | null;
+  // Public URL of the uploaded profile image, or null/undefined.
+  avatar?: string | null;
+  // Gamification fields (derived + returned by the backend).
+  xp?: number;
+  level?: number;
+  xp_into_level?: number;
+  xp_to_next?: number;
+  email?: string;
+  email_verified?: boolean;
+  // Achievement badges earned at level milestones (derived by the backend).
+  badges?: { id: string; label: string }[];
 };
 
 export type AuthState = {
