@@ -101,6 +101,32 @@ PDF_TEMPLATE = """
             </tr>
             {% endfor %}
         </table>
+    {% else %}
+        {% for key, value in data.items() %}
+        <h2>{{ key | replace('_', ' ') | title }}</h2>
+        {% if value is mapping %}
+            <table>
+            {% for k, v in value.items() %}
+                <tr><th>{{ k | replace('_', ' ') | title }}</th><td>{{ v }}</td></tr>
+            {% endfor %}
+            </table>
+        {% elif value is sequence and value is not string %}
+            {% if value and value[0] is mapping %}
+            <table>
+                <tr>{% for col in value[0].keys() %}
+                    <th>{{ col | replace('_', ' ') | title }}</th>{% endfor %}</tr>
+                {% for row in value %}
+                <tr>{% for col in value[0].keys() %}
+                    <td>{{ row.get(col, '') }}</td>{% endfor %}</tr>
+                {% endfor %}
+            </table>
+            {% else %}
+            <ul>{% for item in value %}<li>{{ item }}</li>{% endfor %}</ul>
+            {% endif %}
+        {% else %}
+            <p>{{ value }}</p>
+        {% endif %}
+        {% endfor %}
     {% endif %}
 
     <div class="footer">
