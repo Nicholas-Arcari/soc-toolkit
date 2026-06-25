@@ -55,11 +55,11 @@ export default function FileUpload({
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
     >
-      <Upload className="w-10 h-10 text-gray-400 mb-3" />
-      <p className="text-sm font-medium text-gray-300">{label}</p>
-      <p className="text-xs text-gray-500 mt-1">{description}</p>
+      <Upload className="w-10 h-10 text-muted mb-3" />
+      <p className="text-sm font-medium text-foreground">{label}</p>
+      <p className="text-xs text-muted mt-1">{description}</p>
       {fileName && (
-        <p className="text-xs text-primary-400 mt-2 font-mono">{fileName}</p>
+        <p className="text-xs text-foreground mt-2 font-mono">{fileName}</p>
       )}
       <input
         type="file"
