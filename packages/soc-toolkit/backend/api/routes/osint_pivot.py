@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from sec_common.integrations import (
+    AlienVaultOTXClient,
     ASNClient,
     CrtShClient,
     MnemonicPdnsClient,
@@ -39,6 +40,7 @@ def _build_pivot_clients() -> PivotClients:
         asn=ASNClient(),
         reverse_dns=ReverseDNSClient(),
         shodan=ShodanClient(api_key=settings.get_api_key("shodan")),
+        otx=AlienVaultOTXClient(api_key=settings.get_api_key("otx")),
     )
 
 
