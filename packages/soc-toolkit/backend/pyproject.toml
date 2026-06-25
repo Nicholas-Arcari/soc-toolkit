@@ -44,6 +44,7 @@ yara-x = "^1.15.0"
 
 # Sigma rule parsing (detection rules are YAML)
 pyyaml = "^6.0.2"
+oletools = "^0.60.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"
