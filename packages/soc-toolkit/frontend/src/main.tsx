@@ -1,9 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider, RequireAuth } from "@sec-toolkit/common/auth";
-import App from "./App";
+import { AuthProvider } from "@sec-toolkit/common/auth";
+import { ThemeProvider } from "@sec-toolkit/common/theme";
+import Root from "./Root";
 import api from "./api/client";
+import "./i18n";
 import "./index.css";
 
 // `scope` keeps SOC/OSINT sessions independent if both stacks sit on
@@ -12,11 +14,11 @@ import "./index.css";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider client={api} scope="soc">
-        <RequireAuth loginProps={{ title: "SOC Toolkit" }}>
-          <App />
-        </RequireAuth>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider client={api} scope="soc">
+          <Root />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );
