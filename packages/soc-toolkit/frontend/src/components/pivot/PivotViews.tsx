@@ -37,7 +37,7 @@ export function TabContent({ tab, pivot }: { tab: TabName; pivot: PivotResult["p
 }
 
 function EmptyState({ message }: { message: string }) {
-  return <p className="text-sm text-gray-500 italic">{message}</p>;
+  return <p className="text-sm text-muted italic">{message}</p>;
 }
 
 function CertificatesView({ rows }: { rows: NonNullable<PivotResult["pivot"]["certificates"]> }) {
@@ -47,7 +47,7 @@ function CertificatesView({ rows }: { rows: NonNullable<PivotResult["pivot"]["ce
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-gray-400 border-b border-dark-border">
+          <tr className="text-left text-muted border-b border-dark-border">
             <th className="pb-3 pr-4">Subdomain</th>
             <th className="pb-3 pr-4">Issuer</th>
             <th className="pb-3 pr-4">Not Before</th>
@@ -58,15 +58,15 @@ function CertificatesView({ rows }: { rows: NonNullable<PivotResult["pivot"]["ce
         <tbody className="divide-y divide-dark-border">
           {rows.map((r, i) => (
             <tr key={`${r.cert_id}-${i}`}>
-              <td className="py-2 pr-4 font-mono text-gray-200">{r.subdomain}</td>
-              <td className="py-2 pr-4 text-gray-400 text-xs">{r.issuer}</td>
-              <td className="py-2 pr-4 text-gray-400 text-xs">{r.not_before.slice(0, 10)}</td>
-              <td className="py-2 pr-4 text-gray-400 text-xs">{r.not_after.slice(0, 10)}</td>
+              <td className="py-2 pr-4 font-mono text-foreground">{r.subdomain}</td>
+              <td className="py-2 pr-4 text-muted text-xs">{r.issuer}</td>
+              <td className="py-2 pr-4 text-muted text-xs">{r.not_before.slice(0, 10)}</td>
+              <td className="py-2 pr-4 text-muted text-xs">{r.not_after.slice(0, 10)}</td>
               <td className="py-2">
                 {r.active ? (
                   <span className="text-green-400 text-xs">active</span>
                 ) : (
-                  <span className="text-gray-500 text-xs">expired</span>
+                  <span className="text-muted text-xs">expired</span>
                 )}
               </td>
             </tr>
@@ -86,7 +86,7 @@ function PassiveDNSView({ rows }: { rows: NonNullable<PivotResult["pivot"]["pass
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-gray-400 border-b border-dark-border">
+          <tr className="text-left text-muted border-b border-dark-border">
             <th className="pb-3 pr-4">Value</th>
             <th className="pb-3 pr-4">Type</th>
             <th className="pb-3 pr-4">First Seen</th>
@@ -97,13 +97,13 @@ function PassiveDNSView({ rows }: { rows: NonNullable<PivotResult["pivot"]["pass
         <tbody className="divide-y divide-dark-border">
           {rows.map((r, i) => (
             <tr key={i}>
-              <td className="py-2 pr-4 font-mono text-gray-200">{r.value}</td>
+              <td className="py-2 pr-4 font-mono text-foreground">{r.value}</td>
               <td className="py-2 pr-4">
                 <span className="px-2 py-0.5 bg-dark-border rounded text-xs">{r.record_type}</span>
               </td>
-              <td className="py-2 pr-4 text-gray-400 text-xs">{String(r.first_seen).slice(0, 10)}</td>
-              <td className="py-2 pr-4 text-gray-400 text-xs">{String(r.last_seen).slice(0, 10)}</td>
-              <td className="py-2 text-gray-400 text-xs">{r.source}</td>
+              <td className="py-2 pr-4 text-muted text-xs">{String(r.first_seen).slice(0, 10)}</td>
+              <td className="py-2 pr-4 text-muted text-xs">{String(r.last_seen).slice(0, 10)}</td>
+              <td className="py-2 text-muted text-xs">{r.source}</td>
             </tr>
           ))}
         </tbody>
@@ -128,16 +128,16 @@ function WhoisView({
     <div className="space-y-6">
       {hasCurrent && whois && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-300 mb-3">Current WHOIS</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-3">Current WHOIS</h3>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
             {Object.entries(whois).map(([k, v]) => {
               if (!v || (Array.isArray(v) && v.length === 0)) return null;
               return (
                 <div key={k}>
-                  <dt className="text-gray-500 text-xs uppercase tracking-wide">
+                  <dt className="text-muted text-xs uppercase tracking-wide">
                     {k.replace(/_/g, " ")}
                   </dt>
-                  <dd className="text-gray-200 font-mono text-xs break-all">
+                  <dd className="text-foreground font-mono text-xs break-all">
                     {Array.isArray(v) ? v.join(", ") : String(v)}
                   </dd>
                 </div>
@@ -148,15 +148,15 @@ function WhoisView({
       )}
       {hasHistory && history && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-300 mb-3">History ({history.length})</h3>
+          <h3 className="text-sm font-semibold text-foreground mb-3">History ({history.length})</h3>
           <div className="space-y-2">
             {history.map((h, i) => (
-              <div key={i} className="bg-dark-bg rounded-lg p-3 text-xs text-gray-300">
+              <div key={i} className="bg-dark-bg rounded-lg p-3 text-xs text-foreground">
                 <div className="flex justify-between">
                   <span className="font-mono">{h.registrar || "unknown registrar"}</span>
-                  <span className="text-gray-500">{h.updated_date}</span>
+                  <span className="text-muted">{h.updated_date}</span>
                 </div>
-                {h.contact_email && <div className="mt-1 text-gray-500">{h.contact_email}</div>}
+                {h.contact_email && <div className="mt-1 text-muted">{h.contact_email}</div>}
               </div>
             ))}
           </div>
@@ -172,7 +172,7 @@ function SubdomainsView({ subs }: { subs: string[] }) {
   return (
     <div className="flex flex-wrap gap-2">
       {subs.map((s) => (
-        <span key={s} className="px-3 py-1 bg-dark-bg rounded text-xs font-mono text-gray-300">
+        <span key={s} className="px-3 py-1 bg-dark-bg rounded text-xs font-mono text-foreground">
           {s}
         </span>
       ))}
@@ -185,24 +185,24 @@ function ASNView({ asn }: { asn?: PivotResult["pivot"]["asn"] }) {
   return (
     <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
       <div>
-        <dt className="text-gray-500 text-xs uppercase">ASN</dt>
-        <dd className="text-gray-200 font-mono">{asn.asn}</dd>
+        <dt className="text-muted text-xs uppercase">ASN</dt>
+        <dd className="text-foreground font-mono">{asn.asn}</dd>
       </div>
       <div>
-        <dt className="text-gray-500 text-xs uppercase">Description</dt>
-        <dd className="text-gray-200">{asn.asn_description || "-"}</dd>
+        <dt className="text-muted text-xs uppercase">Description</dt>
+        <dd className="text-foreground">{asn.asn_description || "-"}</dd>
       </div>
       <div>
-        <dt className="text-gray-500 text-xs uppercase">CIDR</dt>
-        <dd className="text-gray-200 font-mono">{asn.cidr || "-"}</dd>
+        <dt className="text-muted text-xs uppercase">CIDR</dt>
+        <dd className="text-foreground font-mono">{asn.cidr || "-"}</dd>
       </div>
       <div>
-        <dt className="text-gray-500 text-xs uppercase">Country</dt>
-        <dd className="text-gray-200">{asn.country || "-"}</dd>
+        <dt className="text-muted text-xs uppercase">Country</dt>
+        <dd className="text-foreground">{asn.country || "-"}</dd>
       </div>
       <div>
-        <dt className="text-gray-500 text-xs uppercase">Registry</dt>
-        <dd className="text-gray-200 uppercase">{asn.registry || "-"}</dd>
+        <dt className="text-muted text-xs uppercase">Registry</dt>
+        <dd className="text-foreground uppercase">{asn.registry || "-"}</dd>
       </div>
     </dl>
   );
@@ -213,7 +213,7 @@ function ReverseDNSView({ ptrs }: { ptrs: string[] }) {
   return (
     <div className="space-y-2">
       {ptrs.map((p) => (
-        <div key={p} className="px-3 py-2 bg-dark-bg rounded font-mono text-sm text-gray-200">
+        <div key={p} className="px-3 py-2 bg-dark-bg rounded font-mono text-sm text-foreground">
           {p}
         </div>
       ))}
@@ -232,30 +232,30 @@ function ShodanView({ shodan }: { shodan?: PivotResult["pivot"]["shodan"] }) {
     <div className="space-y-4">
       <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
         <div>
-          <dt className="text-gray-500 text-xs uppercase">Organization</dt>
-          <dd className="text-gray-200">{shodan.organization || "-"}</dd>
+          <dt className="text-muted text-xs uppercase">Organization</dt>
+          <dd className="text-foreground">{shodan.organization || "-"}</dd>
         </div>
         <div>
-          <dt className="text-gray-500 text-xs uppercase">ISP</dt>
-          <dd className="text-gray-200">{shodan.isp || "-"}</dd>
+          <dt className="text-muted text-xs uppercase">ISP</dt>
+          <dd className="text-foreground">{shodan.isp || "-"}</dd>
         </div>
         <div>
-          <dt className="text-gray-500 text-xs uppercase">Location</dt>
-          <dd className="text-gray-200">
+          <dt className="text-muted text-xs uppercase">Location</dt>
+          <dd className="text-foreground">
             {[shodan.city, shodan.country].filter(Boolean).join(", ") || "-"}
           </dd>
         </div>
         <div>
-          <dt className="text-gray-500 text-xs uppercase">OS</dt>
-          <dd className="text-gray-200">{shodan.os || "-"}</dd>
+          <dt className="text-muted text-xs uppercase">OS</dt>
+          <dd className="text-foreground">{shodan.os || "-"}</dd>
         </div>
       </dl>
       {(shodan.open_ports?.length ?? 0) > 0 && (
         <div>
-          <h4 className="text-xs text-gray-500 uppercase mb-2">Open Ports</h4>
+          <h4 className="text-xs text-muted uppercase mb-2">Open Ports</h4>
           <div className="flex flex-wrap gap-2">
             {shodan.open_ports?.map((p) => (
-              <span key={p} className="px-2 py-1 bg-dark-bg rounded font-mono text-xs text-gray-200">
+              <span key={p} className="px-2 py-1 bg-dark-bg rounded font-mono text-xs text-foreground">
                 {p}
               </span>
             ))}
