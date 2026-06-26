@@ -1,6 +1,20 @@
 import { createApiClient, type IOC, type IOCExtractionResult, type HealthCheck } from "@sec-toolkit/common/api";
+import { apiKeyHeaders } from "../lib/apiKeys";
+import { recordAnalysis } from "../lib/history";
 
 const api = createApiClient({ baseURL: "/api" });
+
+// Attach the user's own provider keys (entered in Settings, stored only in
+// their browser) as X-Api-Key-<service> headers, so the backend uses them for
+// this request and falls back to its .env when absent.
+api.interceptors.request.use((config) => {
+  const extra = apiKeyHeaders();
+  if (Object.keys(extra).length > 0) {
+    config.headers = config.headers ?? {};
+    Object.assign(config.headers as Record<string, string>, extra);
+  }
+  return config;
+});
 
 export type { IOC, IOCExtractionResult, HealthCheck };
 
@@ -56,7 +70,34 @@ export async function analyzePhishing(file: File): Promise<PhishingResult> {
   const response = await api.post<PhishingResult>("/phishing/analyze", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  awardXp("phishing", response.data.indicators?.length ?? 0);
   return response.data;
+}
+
+export interface InboxMessage {
+  subject: string;
+  from: string;
+  date: string;
+  verdict: string;
+  risk_score: number;
+  indicators: string[];
+}
+
+export interface InboxQuery {
+  host: string;
+  username: string;
+  password: string;
+  port?: number;
+  folder?: string;
+  limit?: number;
+}
+
+export async function triageInbox(query: InboxQuery): Promise<InboxMessage[]> {
+  const response = await api.post<{ messages: InboxMessage[] }>(
+    "/phishing/inbox",
+    query,
+  );
+  return response.data.messages;
 }
 
 export async function analyzeLogs(
@@ -70,6 +111,7 @@ export async function analyzeLogs(
     formData,
     { headers: { "Content-Type": "multipart/form-data" } }
   );
+  awardXp("logs", response.data.alerts.length);
   return response.data;
 }
 
@@ -79,6 +121,7 @@ export async function extractIOCs(file: File): Promise<IOCExtractionResult> {
   const response = await api.post<IOCExtractionResult>("/ioc/extract", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  awardXp("ioc", response.data.total_iocs);
   return response.data;
 }
 
@@ -187,6 +230,7 @@ export interface PivotResult {
 
 export async function pivotOSINT(type: string, value: string): Promise<PivotResult> {
   const response = await api.post<PivotResult>("/osint/pivot", { type, value });
+  awardXp("ioc-pivot", response.data.error ? 0 : 1);
   return response.data;
 }
 
@@ -210,6 +254,7 @@ export async function scanYara(file: File): Promise<YaraScanResult> {
   const response = await api.post<YaraScanResult>("/yara/scan", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
+  awardXp("yara", response.data.match_count);
   return response.data;
 }
 
@@ -251,6 +296,7 @@ export async function evaluateSigma(
   events: Record<string, unknown>[],
 ): Promise<SigmaEvaluationResult> {
   const response = await api.post<SigmaEvaluationResult>("/sigma/evaluate", { events });
+  awardXp("sigma", response.data.match_count);
   return response.data;
 }
 
@@ -316,12 +362,133 @@ export interface MISPEnrichmentResponse {
 
 export async function enrichWithMISP(text: string): Promise<MISPEnrichmentResponse> {
   const response = await api.post<MISPEnrichmentResponse>("/misp/enrich", { text });
+  awardXp("misp", response.data.misp.known_count);
   return response.data;
 }
 
 export async function lookupMISP(value: string, kind: string): Promise<MISPLookupResult> {
   const response = await api.post<MISPLookupResult>("/misp/lookup", { value, kind });
   return response.data;
+}
+
+export async function uploadAvatar(file: File): Promise<void> {
+  const formData = new FormData();
+  formData.append("file", file);
+  await api.post("/auth/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+}
+
+export async function removeAvatar(): Promise<void> {
+  await api.delete("/auth/avatar");
+}
+
+// Gamification. Fire-and-forget so it can never block or break an analysis;
+// on success it pings the auth context (window event) to refresh XP/level.
+// Silently no-ops when auth is disabled or the user isn't logged in.
+export function awardXp(action: string, findings = 0): void {
+  recordAnalysis(action, findings);
+  api
+    .post("/auth/xp", { action, findings })
+    .then(() => window.dispatchEvent(new CustomEvent("sectk:user-updated")))
+    .catch(() => {});
+}
+
+export interface NewsItem {
+  title: string;
+  link: string;
+  source: string;
+  published: string | null;
+  summary: string;
+}
+
+export interface NewsResponse {
+  count: number;
+  items: NewsItem[];
+}
+
+export async function fetchNews(limit = 40): Promise<NewsResponse> {
+  const response = await api.get<NewsResponse>(`/news?limit=${limit}`);
+  return response.data;
+}
+
+export interface FileInspectionReport {
+  filename: string;
+  size: number;
+  extension: string;
+  detected_type: string;
+  type_mismatch: boolean;
+  suspicious_extension: boolean;
+  double_extension: boolean;
+  macros: boolean;
+  trailing_bytes: number;
+  hashes: { md5: string; sha1: string; sha256: string };
+  embedded: { urls: string[]; ips: string[]; script_markers: string[] };
+  yara_matches: {
+    rule: string;
+    namespace: string;
+    tags: string[];
+    metadata: Record<string, unknown>;
+  }[];
+  virustotal: Record<string, unknown> | null;
+  malwarebazaar: Record<string, unknown> | null;
+  verdict: string;
+  risk_score: number;
+  reasons: string[];
+}
+
+export async function inspectFile(file: File): Promise<FileInspectionReport> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await api.post<FileInspectionReport>("/file/scan", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  awardXp("file", response.data.reasons?.length ?? 0);
+  return response.data;
+}
+
+export interface UrlCheckResult {
+  url: string;
+  domain: string;
+  suspicious_patterns: string[];
+  malicious: boolean;
+  virustotal: Record<string, unknown> | null;
+  urlscan?: Record<string, unknown> | null;
+}
+
+export async function checkUrl(url: string): Promise<UrlCheckResult | null> {
+  const response = await api.post<{ url: string; results: UrlCheckResult[] }>(
+    "/phishing/check-url",
+    { url },
+  );
+  return response.data.results[0] ?? null;
+}
+
+export interface RedirectHop {
+  url: string;
+  status: number;
+}
+
+export interface RedirectTrace {
+  input: string;
+  final_url: string;
+  hops: number;
+  chain: RedirectHop[];
+  blocked: boolean;
+  error: string | null;
+}
+
+export async function traceUrl(url: string): Promise<RedirectTrace> {
+  const response = await api.post<RedirectTrace>("/link/trace", { url });
+  return response.data;
+}
+
+export async function redeemLicense(key: string): Promise<void> {
+  await api.post("/auth/redeem-license", { key });
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  await api.post("/auth/verify", { token });
 }
 
 export default api;
