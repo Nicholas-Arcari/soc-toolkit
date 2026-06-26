@@ -192,3 +192,93 @@ async def test_pivot_type_case_insensitive() -> None:
     result = await pivot("DOMAIN", "example.com", clients=clients)
     assert result["target_type"] == "domain"
     assert "error" not in result
+
+
+@pytest.mark.asyncio
+async def test_pivot_domain_mines_subdomains_from_certs() -> None:
+    crtsh = MagicMock()
+    crtsh.search = AsyncMock(return_value=[
+        {"subdomain": "*.example.com", "cert_id": 1},
+        {"subdomain": "Mail.Example.com", "cert_id": 2},
+        {"subdomain": "other.org", "cert_id": 3},  # off-domain → dropped
+    ])
+    securitytrails = MagicMock()
+    securitytrails.dns_history = AsyncMock(return_value=[])
+    securitytrails.whois_history = AsyncMock(return_value=[])
+    securitytrails.subdomains = AsyncMock(return_value=["api.example.com"])
+    mnemonic = MagicMock()
+    mnemonic.search = AsyncMock(return_value=[])
+    whois = MagicMock()
+    whois.lookup = AsyncMock(return_value={})
+
+    clients = _make_clients(
+        crtsh=crtsh, securitytrails=securitytrails, mnemonic=mnemonic, whois=whois,
+    )
+    result = await pivot("domain", "example.com", clients=clients)
+
+    # wildcard stripped, case-normalized, off-domain dropped, deduped + sorted
+    assert result["pivot"]["subdomains"] == ["api.example.com", "mail.example.com"]
+    assert result["summary"]["total_subdomains"] == 2
+    # certs collapsed to unique cert_ids
+    assert len(result["pivot"]["certificates"]) == 3
+
+
+@pytest.mark.asyncio
+async def test_pivot_merges_and_dedupes_passive_dns_with_otx() -> None:
+    crtsh = MagicMock()
+    crtsh.search = AsyncMock(return_value=[])
+    securitytrails = MagicMock()
+    securitytrails.dns_history = AsyncMock(return_value=[
+        {"value": "1.1.1.1", "record_type": "A", "source": "securitytrails"},
+    ])
+    securitytrails.whois_history = AsyncMock(return_value=[])
+    securitytrails.subdomains = AsyncMock(return_value=[])
+    mnemonic = MagicMock()
+    mnemonic.search = AsyncMock(return_value=[
+        {"value": "1.1.1.1", "record_type": "A", "source": "mnemonic"},  # dup
+    ])
+    whois = MagicMock()
+    whois.lookup = AsyncMock(return_value={})
+    otx = MagicMock()
+    otx.passive_dns = AsyncMock(return_value=[
+        {"value": "2.2.2.2", "record_type": "A", "source": "otx"},
+    ])
+
+    clients = _make_clients(
+        crtsh=crtsh, securitytrails=securitytrails, mnemonic=mnemonic,
+        whois=whois, otx=otx,
+    )
+    result = await pivot("domain", "example.com", clients=clients)
+
+    # ST + Mnemonic duplicate collapses to one; OTX adds a distinct value
+    assert sorted(r["value"] for r in result["pivot"]["passive_dns"]) == [
+        "1.1.1.1",
+        "2.2.2.2",
+    ]
+    otx.passive_dns.assert_awaited_once_with("example.com", "domain")
+
+
+@pytest.mark.asyncio
+async def test_pivot_ip_includes_otx_passive_dns() -> None:
+    asn = MagicMock()
+    asn.lookup = AsyncMock(return_value={"asn": "AS1", "asn_description": "X"})
+    rdns = MagicMock()
+    rdns.lookup = AsyncMock(return_value=[])
+    mnemonic = MagicMock()
+    mnemonic.search = AsyncMock(return_value=[])
+    shodan = MagicMock()
+    shodan.check_ip = AsyncMock(return_value={})
+    otx = MagicMock()
+    otx.passive_dns = AsyncMock(return_value=[
+        {"value": "host.example.com", "record_type": "A", "source": "otx"},
+    ])
+
+    clients = _make_clients(
+        asn=asn, reverse_dns=rdns, mnemonic=mnemonic, shodan=shodan, otx=otx,
+    )
+    result = await pivot("ipv4", "1.2.3.4", clients=clients)
+
+    assert [r["value"] for r in result["pivot"]["passive_dns"]] == [
+        "host.example.com"
+    ]
+    otx.passive_dns.assert_awaited_once_with("1.2.3.4", "ip")
