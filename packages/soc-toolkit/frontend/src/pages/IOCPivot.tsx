@@ -1,4 +1,6 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Search } from "lucide-react";
 import { pivotOSINT, type PivotResult } from "../api/client";
 import { TabContent, defaultTab, tabsFor, type TabName } from "../components/pivot/PivotViews";
@@ -14,30 +16,50 @@ function detectType(value: string): string {
 }
 
 export default function IOCPivot() {
+  const { t } = useTranslation();
   const [value, setValue] = useState("");
   const [type, setType] = useState("auto");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PivotResult | null>(null);
   const [activeTab, setActiveTab] = useState<TabName>("certificates");
+  const [searchParams] = useSearchParams();
+  const autoRan = useRef(false);
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!value.trim()) return;
-
-    const actualType = type === "auto" ? detectType(value) : type;
+  async function runPivot(indicator: string, typeChoice: string) {
+    const trimmed = indicator.trim();
+    if (!trimmed) return;
+    const actualType = typeChoice === "auto" ? detectType(trimmed) : typeChoice;
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const data = await pivotOSINT(actualType, value.trim());
+      const data = await pivotOSINT(actualType, trimmed);
       setResult(data);
       setActiveTab(defaultTab(data.target_type));
     } catch {
-      setError("Pivot failed. Make sure the backend is running.");
+      setError(t("iocPivot.error"));
     } finally {
       setLoading(false);
     }
+  }
+
+  // Deep-link: /ioc-pivot?q=<indicator> pre-fills + auto-runs once, so the
+  // other analyzers can pivot an indicator straight into here.
+  useEffect(() => {
+    if (autoRan.current) return;
+    const q = searchParams.get("q");
+    if (q) {
+      autoRan.current = true;
+      setValue(q);
+      void runPivot(q, "auto");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    void runPivot(value, type);
   };
 
   const tabs = result ? tabsFor(result.target_type, result.pivot) : [];
@@ -45,10 +67,8 @@ export default function IOCPivot() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">IOC Pivot</h1>
-        <p className="text-gray-400 mt-2">
-          Pivot any indicator across OSINT sources - certificates, passive DNS, WHOIS, ASN, Shodan
-        </p>
+        <h1 className="text-3xl font-bold">{t("iocPivot.title")}</h1>
+        <p className="text-muted mt-2">{t("iocPivot.subtitle")}</p>
       </div>
 
       <form
@@ -59,10 +79,10 @@ export default function IOCPivot() {
           <select
             value={type}
             onChange={(e) => setType(e.target.value)}
-            className="px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-sm text-gray-200 focus:outline-none focus:border-primary-500"
+            className="px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-sm text-foreground focus:outline-none focus:border-primary-500"
           >
-            <option value="auto">Auto-detect</option>
-            <option value="domain">Domain</option>
+            <option value="auto">{t("iocPivot.autoDetect")}</option>
+            <option value="domain">{t("iocPivot.domain")}</option>
             <option value="ipv4">IPv4</option>
             <option value="ipv6">IPv6</option>
           </select>
@@ -70,16 +90,16 @@ export default function IOCPivot() {
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder="example.com or 8.8.8.8"
-            className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-primary-500 font-mono"
+            placeholder={t("iocPivot.placeholder")}
+            className="flex-1 px-4 py-3 bg-dark-bg border border-dark-border rounded-lg text-sm text-foreground placeholder-muted focus:outline-none focus:border-primary-500 font-mono"
           />
           <button
             type="submit"
             disabled={loading || !value.trim()}
-            className="flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 disabled:bg-dark-border disabled:text-gray-500 rounded-lg text-sm font-medium transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-primary-600 hover:bg-primary-500 disabled:bg-dark-border disabled:text-muted rounded-lg text-sm font-medium transition-colors"
           >
             <Search className="w-4 h-4" />
-            {loading ? "Pivoting..." : "Pivot"}
+            {loading ? t("iocPivot.pivoting") : t("iocPivot.pivot")}
           </button>
         </div>
       </form>
@@ -87,7 +107,7 @@ export default function IOCPivot() {
       {loading && (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mx-auto" />
-          <p className="text-gray-400 mt-4">Fanning out to OSINT sources...</p>
+          <p className="text-muted mt-4">{t("iocPivot.fanningOut")}</p>
         </div>
       )}
 
@@ -106,15 +126,15 @@ export default function IOCPivot() {
           <div className="bg-dark-card rounded-xl border border-dark-border p-6">
             <div className="flex items-baseline justify-between">
               <h2 className="text-xl font-semibold font-mono">{result.target}</h2>
-              <span className="text-xs text-gray-400 uppercase tracking-wide">
+              <span className="text-xs text-muted uppercase tracking-wide">
                 {result.target_type}
               </span>
             </div>
-            <div className="mt-3 flex flex-wrap gap-4 text-xs text-gray-400">
+            <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted">
               {Object.entries(result.summary).map(([k, v]) => (
                 <div key={k}>
-                  <span className="text-gray-500">{k.replace(/_/g, " ")}:</span>{" "}
-                  <span className="text-gray-200 font-mono">{String(v || "-")}</span>
+                  <span className="text-muted">{k.replace(/_/g, " ")}:</span>{" "}
+                  <span className="text-foreground font-mono">{String(v || "-")}</span>
                 </div>
               ))}
             </div>
@@ -127,8 +147,8 @@ export default function IOCPivot() {
                 onClick={() => setActiveTab(tab.key)}
                 className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
                   activeTab === tab.key
-                    ? "border-primary-500 text-primary-400"
-                    : "border-transparent text-gray-400 hover:text-white"
+                    ? "border-primary-500 text-foreground"
+                    : "border-transparent text-muted hover:text-foreground"
                 }`}
               >
                 {tab.label}
