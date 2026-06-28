@@ -30,6 +30,8 @@ apscheduler = "^3.11.0"
 pillow = "^11.0.0"
 # DNS mapping - async resolver for A/AAAA/MX/NS/TXT, SPF/DMARC parsing.
 dnspython = "^2.7.0"
+weasyprint = "^69.0"
+jinja2 = "^3.1.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.0"
