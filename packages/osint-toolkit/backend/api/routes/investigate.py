@@ -10,11 +10,15 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, Field
 from sec_common.integrations import HIBPClient
+from sec_common.ratelimit import SlidingWindowLimiter
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
+from core.fingerprint.fingerprinter import fingerprint_site
 from core.investigate.breach_search import (
     BreachSearchValidationError,
     search_breaches,
@@ -28,12 +32,61 @@ from core.investigate.image_metadata import (
     ImageValidationError,
     extract_metadata,
 )
+from core.investigate.person import PersonValidationError, investigate_person
 from core.investigate.username_search import (
     UsernameValidationError,
     search_username,
 )
+from db.models import Investigation
+from db.session import get_session, new_session
 
 router = APIRouter()
+
+
+async def _save_investigation(
+    kind: str, query: str, summary: str, result: dict
+) -> None:
+    """Best-effort persistence; never break an investigation if the DB is down."""
+    try:
+        async with new_session() as session:
+            session.add(
+                Investigation(
+                    kind=kind, query=query, summary=summary, result=result
+                )
+            )
+            await session.commit()
+    except Exception:
+        pass
+
+
+@router.get("/history", status_code=status.HTTP_200_OK)
+async def investigation_history(
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Recent saved person/fingerprint investigations (newest first)."""
+    rows = (
+        (
+            await session.execute(
+                select(Investigation)
+                .order_by(Investigation.created_at.desc())
+                .limit(25)
+            )
+        )
+        .scalars()
+        .all()
+    )
+    return {
+        "investigations": [
+            {
+                "id": row.id,
+                "kind": row.kind,
+                "query": row.query,
+                "summary": row.summary,
+                "created_at": row.created_at.isoformat(),
+            }
+            for row in rows
+        ]
+    }
 
 
 class UsernameQuery(BaseModel):
@@ -131,3 +184,71 @@ async def investigate_image(file: UploadFile = File(...)) -> dict:
         "note": result.note,
         "graph": _dump_dataclass(graph),
     }
+
+
+class PersonQuery(BaseModel):
+    email: str = Field(default="", max_length=253)
+    name: str = Field(default="", max_length=128)
+    org: str = Field(default="", max_length=128)
+    location: str = Field(default="", max_length=128)
+    handle: str = Field(default="", max_length=64)
+
+
+@router.post("/person", status_code=status.HTTP_200_OK)
+async def investigate_person_route(payload: PersonQuery) -> dict:
+    """Aggregate free public sources around an email and/or name."""
+    try:
+        result = await investigate_person(
+            email=payload.email,
+            name=payload.name,
+            org=payload.org,
+            location=payload.location,
+            handle=payload.handle,
+        )
+    except PersonValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)
+        ) from exc
+    data = asdict(result)
+    await _save_investigation(
+        "person", payload.email or payload.name, str(data.get("note", "")), data
+    )
+    return data
+
+
+_fingerprint_limiter = SlidingWindowLimiter(settings.outbound_fetch_per_minute, 60.0)
+
+
+async def _fingerprint_ratelimit(request: Request) -> None:
+    client = request.client.host if request.client else "unknown"
+    if not _fingerprint_limiter.allow(client):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="too many fingerprint requests; slow down",
+        )
+
+
+class FingerprintQuery(BaseModel):
+    url: str = Field(min_length=1, max_length=2048)
+    authorized: bool = False
+
+
+@router.post(
+    "/fingerprint",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(_fingerprint_ratelimit)],
+)
+async def investigate_fingerprint(payload: FingerprintQuery) -> dict:
+    """Fingerprint a site's tech stack - active recon, authorization-gated."""
+    if not payload.authorized:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="authorization acknowledgment required to fingerprint a site",
+        )
+    result = await fingerprint_site(payload.url)
+    data = asdict(result)
+    techs = data.get("technologies", [])
+    await _save_investigation(
+        "fingerprint", payload.url, f"{len(techs)} technologies", data
+    )
+    return data
