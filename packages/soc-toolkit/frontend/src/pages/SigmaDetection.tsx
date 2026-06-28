@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Library, PlayCircle, AlertTriangle, BookOpen, Terminal, Copy, Check } from "lucide-react";
 import { SeverityBadge } from "@sec-toolkit/common/components";
 import {
@@ -36,6 +37,7 @@ const SAMPLE_EVENTS = `[
  * have before they trust a "no matches" result.
  */
 export default function SigmaDetection() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("library");
   const [rules, setRules] = useState<SigmaRuleList | null>(null);
   const [rulesError, setRulesError] = useState<string | null>(null);
@@ -48,8 +50,8 @@ export default function SigmaDetection() {
   useEffect(() => {
     listSigmaRules()
       .then(setRules)
-      .catch(() => setRulesError("Failed to load Sigma rules. Is the backend running?"));
-  }, []);
+      .catch(() => setRulesError(t("sigma.rulesError")));
+  }, [t]);
 
   async function runEvaluate() {
     setEvalError(null);
@@ -58,11 +60,11 @@ export default function SigmaDetection() {
     try {
       parsed = JSON.parse(eventsText);
     } catch {
-      setEvalError("Events must be valid JSON (an array of objects).");
+      setEvalError(t("sigma.invalidJson"));
       return;
     }
     if (!Array.isArray(parsed)) {
-      setEvalError("Top-level JSON must be an array of event objects.");
+      setEvalError(t("sigma.mustBeArray"));
       return;
     }
     setLoading(true);
@@ -70,7 +72,7 @@ export default function SigmaDetection() {
       const data = await evaluateSigma(parsed as Record<string, unknown>[]);
       setResult(data);
     } catch {
-      setEvalError("Evaluation failed. Check the backend logs.");
+      setEvalError(t("sigma.evalFailed"));
     } finally {
       setLoading(false);
     }
@@ -79,11 +81,8 @@ export default function SigmaDetection() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Sigma Detection</h1>
-        <p className="text-gray-400 mt-2">
-          Inspect the rule corpus or evaluate a batch of normalised log events
-          against every loaded rule.
-        </p>
+        <h1 className="text-3xl font-bold">{t("sigma.title")}</h1>
+        <p className="text-muted mt-2">{t("sigma.subtitle")}</p>
       </div>
 
       <div className="flex gap-2 mb-6">
@@ -91,23 +90,23 @@ export default function SigmaDetection() {
           onClick={() => setTab("library")}
           className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${
             tab === "library"
-              ? "bg-primary-600/30 text-primary-300"
-              : "bg-dark-card text-gray-400 hover:text-gray-200"
+              ? "bg-primary-600/30 text-foreground"
+              : "bg-dark-card text-muted hover:text-foreground"
           }`}
         >
           <Library className="w-4 h-4" />
-          Rule library {rules ? `(${rules.rule_count})` : ""}
+          {t("sigma.ruleLibrary")} {rules ? `(${rules.rule_count})` : ""}
         </button>
         <button
           onClick={() => setTab("evaluate")}
           className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 ${
             tab === "evaluate"
-              ? "bg-primary-600/30 text-primary-300"
-              : "bg-dark-card text-gray-400 hover:text-gray-200"
+              ? "bg-primary-600/30 text-foreground"
+              : "bg-dark-card text-muted hover:text-foreground"
           }`}
         >
           <PlayCircle className="w-4 h-4" />
-          Evaluate events
+          {t("sigma.evaluateEvents")}
         </button>
       </div>
 
@@ -120,7 +119,7 @@ export default function SigmaDetection() {
             </div>
           )}
           {!rules && !rulesError && (
-            <p className="text-gray-500 text-sm">Loading rules…</p>
+            <p className="text-muted text-sm">{t("sigma.loadingRules")}</p>
           )}
           {rules && (
             <div className="space-y-3">
@@ -135,8 +134,8 @@ export default function SigmaDetection() {
       {tab === "evaluate" && (
         <div className="space-y-4">
           <div className="bg-dark-card rounded-xl border border-dark-border p-6 space-y-4">
-            <label htmlFor="sigma-events-input" className="block text-sm font-medium text-gray-300">
-              Events (JSON array)
+            <label htmlFor="sigma-events-input" className="block text-sm font-medium text-foreground">
+              {t("sigma.eventsLabel")}
             </label>
             <textarea
               id="sigma-events-input"
@@ -147,18 +146,14 @@ export default function SigmaDetection() {
               className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
             />
             <div className="flex items-center justify-between">
-              <p className="text-xs text-gray-500">
-                Shape matches the dicts emitted by our log analyzers
-                (<span className="font-mono">event_type</span>,{" "}
-                <span className="font-mono">source_ip</span>, etc.).
-              </p>
+              <p className="text-xs text-muted">{t("sigma.eventsHint")}</p>
               <button
                 onClick={runEvaluate}
                 disabled={loading}
-                className="px-4 py-2 bg-primary-600 hover:bg-primary-500 disabled:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+                className="px-4 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium flex items-center gap-2"
               >
                 <PlayCircle className="w-4 h-4" />
-                {loading ? "Evaluating…" : "Evaluate"}
+                {loading ? t("sigma.evaluating") : t("sigma.evaluate")}
               </button>
             </div>
             {evalError && (
@@ -172,14 +167,13 @@ export default function SigmaDetection() {
           {result && (
             <div className="bg-dark-card rounded-xl border border-dark-border p-6 space-y-3">
               <h3 className="font-semibold">
-                {result.match_count} match{result.match_count === 1 ? "" : "es"} over{" "}
-                {result.event_count} event{result.event_count === 1 ? "" : "s"}
+                {t("sigma.resultSummary", {
+                  matches: result.match_count,
+                  events: result.event_count,
+                })}
               </h3>
               {result.matches.length === 0 && (
-                <p className="text-gray-500 text-sm">
-                  No rule triggered. This does not mean the events are safe - coverage
-                  is limited to the bundled rule set.
-                </p>
+                <p className="text-muted text-sm">{t("sigma.noTrigger")}</p>
               )}
               {result.matches.map((m, i) => (
                 <div
@@ -189,30 +183,30 @@ export default function SigmaDetection() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <div className="font-semibold">{m.title}</div>
-                      <p className="text-xs text-gray-500 font-mono mt-0.5">{m.rule_id}</p>
+                      <p className="text-xs text-muted font-mono mt-0.5">{m.rule_id}</p>
                       {m.description && (
-                        <p className="text-sm text-gray-400 mt-1">{m.description}</p>
+                        <p className="text-sm text-muted mt-1">{m.description}</p>
                       )}
                     </div>
                     <SeverityBadge severity={m.level || "info"} />
                   </div>
                   {m.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
-                      {m.tags.map((t) => (
+                      {m.tags.map((tag) => (
                         <span
-                          key={t}
-                          className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-gray-400"
+                          key={tag}
+                          className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-muted"
                         >
-                          {t}
+                          {tag}
                         </span>
                       ))}
                     </div>
                   )}
                   <details className="text-xs">
-                    <summary className="cursor-pointer text-gray-500 hover:text-gray-300">
-                      Event
+                    <summary className="cursor-pointer text-muted hover:text-foreground">
+                      {t("sigma.event")}
                     </summary>
-                    <pre className="mt-2 p-2 bg-black/30 rounded text-gray-300 font-mono overflow-x-auto">
+                    <pre className="mt-2 p-2 bg-black/30 rounded text-foreground font-mono overflow-x-auto">
                       {JSON.stringify(m.event, null, 2)}
                     </pre>
                   </details>
@@ -232,6 +226,7 @@ export default function SigmaDetection() {
  * in scope (one rule, three backends) and doesn't need its own module.
  */
 function RuleCard({ rule }: { rule: { id: string; title: string; description?: string; level?: string; tags: string[] } }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [backend, setBackend] = useState<SigmaBackend>("splunk");
   const [result, setResult] = useState<SigmaCompileResult | null>(null);
@@ -248,7 +243,7 @@ function RuleCard({ rule }: { rule: { id: string; title: string; description?: s
       const data = await compileSigmaRule(rule.id, target);
       setResult(data);
     } catch {
-      setError("Compile failed - the rule may use an unsupported feature.");
+      setError(t("sigma.compileFailed"));
     } finally {
       setLoading(false);
     }
@@ -266,24 +261,24 @@ function RuleCard({ rule }: { rule: { id: string; title: string; description?: s
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-primary-400 shrink-0" />
+            <BookOpen className="w-4 h-4 text-foreground shrink-0" />
             <span className="font-semibold truncate">{rule.title}</span>
           </div>
           {rule.description && (
-            <p className="text-sm text-gray-400 mt-1">{rule.description}</p>
+            <p className="text-sm text-muted mt-1">{rule.description}</p>
           )}
-          <p className="text-xs text-gray-600 font-mono mt-1">{rule.id}</p>
+          <p className="text-xs text-muted font-mono mt-1">{rule.id}</p>
         </div>
         <SeverityBadge severity={rule.level || "info"} />
       </div>
       {rule.tags.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {rule.tags.map((t) => (
+          {rule.tags.map((tag) => (
             <span
-              key={t}
-              className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-gray-400"
+              key={tag}
+              className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-muted"
             >
-              {t}
+              {tag}
             </span>
           ))}
         </div>
@@ -291,10 +286,10 @@ function RuleCard({ rule }: { rule: { id: string; title: string; description?: s
       <div>
         <button
           onClick={() => setOpen((v) => !v)}
-          className="text-xs text-primary-300 hover:text-primary-200 flex items-center gap-1 mt-1"
+          className="text-xs text-foreground hover:text-foreground flex items-center gap-1 mt-1"
         >
           <Terminal className="w-3.5 h-3.5" />
-          {open ? "Hide SIEM query" : "Compile to SIEM query"}
+          {open ? t("sigma.hideQuery") : t("sigma.compileQuery")}
         </button>
       </div>
       {open && (
@@ -307,15 +302,15 @@ function RuleCard({ rule }: { rule: { id: string; title: string; description?: s
                 disabled={loading}
                 className={`px-3 py-1 rounded text-xs font-medium ${
                   result && backend === b.id
-                    ? "bg-primary-600/40 text-primary-200"
-                    : "bg-dark-border text-gray-400 hover:text-gray-100"
+                    ? "bg-primary-600/40 text-foreground"
+                    : "bg-dark-border text-muted hover:text-foreground"
                 }`}
               >
                 {b.label}
               </button>
             ))}
           </div>
-          {loading && <p className="text-xs text-gray-500">Compiling…</p>}
+          {loading && <p className="text-xs text-muted">{t("sigma.compiling")}</p>}
           {error && (
             <p className="text-xs text-red-400 flex items-center gap-1">
               <AlertTriangle className="w-3.5 h-3.5" />
@@ -324,13 +319,13 @@ function RuleCard({ rule }: { rule: { id: string; title: string; description?: s
           )}
           {result && (
             <div className="relative">
-              <pre className="p-3 bg-black/40 rounded text-xs font-mono text-gray-200 overflow-x-auto whitespace-pre-wrap break-all">
+              <pre className="p-3 bg-black/40 rounded text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap break-all">
                 {result.query}
               </pre>
               <button
                 onClick={copyQuery}
-                className="absolute top-2 right-2 p-1.5 bg-dark-border hover:bg-dark-card rounded text-gray-300"
-                title="Copy query"
+                className="absolute top-2 right-2 p-1.5 bg-dark-border hover:bg-dark-card rounded text-foreground"
+                title={t("sigma.copyQuery")}
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
