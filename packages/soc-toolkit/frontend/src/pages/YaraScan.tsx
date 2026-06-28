@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FileSearch, ShieldAlert, ShieldCheck, FileWarning } from "lucide-react";
 import { FileUpload, SeverityBadge } from "@sec-toolkit/common/components";
 import { scanYara, type YaraScanResult } from "../api/client";
@@ -10,6 +11,7 @@ import { scanYara, type YaraScanResult } from "../api/client";
  * reference) rather than the raw dict.
  */
 export default function YaraScan() {
+  const { t } = useTranslation();
   const [result, setResult] = useState<YaraScanResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +23,7 @@ export default function YaraScan() {
       const data = await scanYara(file);
       setResult(data);
     } catch {
-      setError("Scan failed. Make sure the backend is running.");
+      setError(t("yara.error"));
     } finally {
       setLoading(false);
     }
@@ -37,24 +39,20 @@ export default function YaraScan() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">YARA Scanner</h1>
-        <p className="text-gray-400 mt-2">
-          Scan a file against the bundled rule set. Matches surface the rule's
-          metadata - severity, MITRE technique, and reference links when the
-          rule author provided them.
-        </p>
+        <h1 className="text-3xl font-bold">{t("yara.title")}</h1>
+        <p className="text-muted mt-2">{t("yara.subtitle")}</p>
       </div>
 
       <FileUpload
         onFileSelect={handleFileSelect}
-        label="Upload file to scan"
-        description="Any binary or document. Matching happens against all compiled rules under backend/rules/yara/"
+        label={t("yara.uploadLabel")}
+        description={t("yara.uploadDescription")}
       />
 
       {loading && (
         <div className="mt-8 text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mx-auto" />
-          <p className="text-gray-400 mt-4">Running YARA…</p>
+          <p className="text-muted mt-4">{t("yara.running")}</p>
         </div>
       )}
 
@@ -86,10 +84,10 @@ export default function YaraScan() {
                   }`}
                 >
                   {result.match_count > 0
-                    ? `${result.match_count} rule match${result.match_count === 1 ? "" : "es"}`
-                    : "No matches"}
+                    ? t("yara.matches", { count: result.match_count })
+                    : t("yara.noMatches")}
                 </h2>
-                <p className="text-gray-300 text-sm">
+                <p className="text-foreground text-sm">
                   {result.filename} · {(result.size / 1024).toFixed(1)} KB
                 </p>
               </div>
@@ -100,7 +98,7 @@ export default function YaraScan() {
             <div className="bg-dark-card rounded-xl border border-dark-border p-6">
               <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                 <FileWarning className="w-5 h-5 text-yellow-400" />
-                Rule matches
+                {t("yara.ruleMatches")}
               </h3>
               <div className="space-y-3">
                 {result.matches.map((m) => {
@@ -116,14 +114,14 @@ export default function YaraScan() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2">
-                            <FileSearch className="w-4 h-4 text-primary-400 shrink-0" />
+                            <FileSearch className="w-4 h-4 text-foreground shrink-0" />
                             <span className="font-mono text-sm font-semibold truncate">
                               {m.rule}
                             </span>
-                            <span className="text-xs text-gray-500">{m.namespace}</span>
+                            <span className="text-xs text-muted">{m.namespace}</span>
                           </div>
                           {description && (
-                            <p className="text-sm text-gray-400 mt-1">{description}</p>
+                            <p className="text-sm text-muted mt-1">{description}</p>
                           )}
                         </div>
                         <SeverityBadge severity={severity} />
@@ -131,16 +129,16 @@ export default function YaraScan() {
                       {(m.tags.length > 0 || mitre) && (
                         <div className="flex flex-wrap gap-1">
                           {mitre && (
-                            <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary-900/40 text-primary-300">
+                            <span className="text-xs font-mono px-2 py-0.5 rounded bg-primary-900/40 text-foreground">
                               {mitre}
                             </span>
                           )}
-                          {m.tags.map((t) => (
+                          {m.tags.map((tag) => (
                             <span
-                              key={t}
-                              className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-gray-400"
+                              key={tag}
+                              className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-muted"
                             >
-                              {t}
+                              {tag}
                             </span>
                           ))}
                         </div>
@@ -150,7 +148,7 @@ export default function YaraScan() {
                           href={reference}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-xs text-primary-400 hover:underline"
+                          className="text-xs text-foreground hover:underline"
                         >
                           {reference}
                         </a>
