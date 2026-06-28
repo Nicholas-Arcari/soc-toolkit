@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Download, X, GitBranch } from "lucide-react";
 import { FileUpload } from "@sec-toolkit/common/components";
+import CopyButton from "../components/common/CopyButton";
 import {
+  awardXp,
   extractIOCs,
   exportReport,
   pivotOSINT,
@@ -14,6 +17,7 @@ import { TabContent, defaultTab, tabsFor, type TabName } from "../components/piv
 const PIVOTABLE_TYPES = new Set(["domain", "ipv4", "ipv6"]);
 
 export default function IOCExtractor() {
+  const { t } = useTranslation();
   const [result, setResult] = useState<IOCExtractionResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +30,9 @@ export default function IOCExtractor() {
     try {
       const data = await extractIOCs(file);
       setResult(data);
+      awardXp("ioc", data.iocs.length);
     } catch {
-      setError("Extraction failed. Make sure the backend is running.");
+      setError(t("ioc.error"));
     } finally {
       setLoading(false);
     }
@@ -44,7 +49,7 @@ export default function IOCExtractor() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      setError("Export failed.");
+      setError(t("ioc.exportError"));
     }
   };
 
@@ -68,21 +73,21 @@ export default function IOCExtractor() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">IOC Extractor</h1>
-        <p className="text-gray-400 mt-2">Extract indicators of compromise from files and text</p>
+        <h1 className="text-3xl font-bold">{t("ioc.title")}</h1>
+        <p className="text-muted mt-2">{t("ioc.subtitle")}</p>
       </div>
 
       <FileUpload
         onFileSelect={handleFileSelect}
         accept=".pdf,.eml,.txt,.html,.csv"
-        label="Upload File"
-        description="Supports PDF threat reports, .eml emails, plain text, HTML, CSV"
+        label={t("ioc.uploadLabel")}
+        description={t("ioc.uploadDescription")}
       />
 
       {loading && (
         <div className="mt-8 text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500 mx-auto" />
-          <p className="text-gray-400 mt-4">Extracting IOCs...</p>
+          <p className="text-muted mt-4">{t("ioc.extracting")}</p>
         </div>
       )}
 
@@ -98,7 +103,10 @@ export default function IOCExtractor() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold">
-                  {result.total_iocs} IOCs extracted from {result.source}
+                  {t("ioc.extracted", {
+                    n: result.total_iocs,
+                    source: result.source,
+                  })}
                 </h3>
               </div>
               <div className="flex gap-2">
@@ -106,7 +114,7 @@ export default function IOCExtractor() {
                   <button
                     key={format}
                     onClick={() => handleExport(format)}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-dark-bg border border-dark-border rounded-lg text-xs font-medium text-gray-300 hover:text-white hover:border-primary-500 transition-colors"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-dark-bg border border-dark-border rounded-lg text-xs font-medium text-foreground hover:text-foreground hover:border-primary-500 transition-colors"
                   >
                     <Download className="w-3 h-3" />
                     {format.toUpperCase()}
@@ -119,7 +127,7 @@ export default function IOCExtractor() {
               {Object.entries(result.stats).map(([type, count]) => (
                 <span
                   key={type}
-                  className={`px-3 py-1 rounded-full text-xs font-medium ${typeColors[type] ?? "text-gray-400 bg-gray-800"}`}
+                  className={`px-3 py-1 rounded-full text-xs font-medium ${typeColors[type] ?? "text-muted bg-card"}`}
                 >
                   {type.toUpperCase()}: {count}
                 </span>
@@ -133,10 +141,10 @@ export default function IOCExtractor() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filter === "all"
                   ? "bg-primary-600 text-white"
-                  : "bg-dark-card text-gray-400 border border-dark-border hover:text-white"
+                  : "bg-dark-card text-muted border border-dark-border hover:text-foreground"
               }`}
             >
-              All
+              {t("ioc.all")}
             </button>
             {iocTypes.map((type) => (
               <button
@@ -145,7 +153,7 @@ export default function IOCExtractor() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   filter === type
                     ? "bg-primary-600 text-white"
-                    : "bg-dark-card text-gray-400 border border-dark-border hover:text-white"
+                    : "bg-dark-card text-muted border border-dark-border hover:text-foreground"
                 }`}
               >
                 {type.toUpperCase()}
@@ -157,11 +165,11 @@ export default function IOCExtractor() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="text-left text-gray-400 border-b border-dark-border">
-                    <th className="pb-3 pr-4">Type</th>
-                    <th className="pb-3 pr-4">Value</th>
-                    <th className="pb-3 pr-4">Malicious</th>
-                    <th className="pb-3 pr-4">Context</th>
+                  <tr className="text-left text-muted border-b border-dark-border">
+                    <th className="pb-3 pr-4">{t("ioc.colType")}</th>
+                    <th className="pb-3 pr-4">{t("ioc.colValue")}</th>
+                    <th className="pb-3 pr-4">{t("ioc.colMalicious")}</th>
+                    <th className="pb-3 pr-4">{t("ioc.colContext")}</th>
                     <th className="pb-3 w-12"></th>
                   </tr>
                 </thead>
@@ -176,25 +184,28 @@ export default function IOCExtractor() {
                       >
                         <td className="py-3 pr-4">
                           <span
-                            className={`px-2 py-0.5 rounded text-xs font-mono ${typeColors[ioc.type] ?? "text-gray-400"}`}
+                            className={`px-2 py-0.5 rounded text-xs font-mono ${typeColors[ioc.type] ?? "text-muted"}`}
                           >
                             {ioc.type.toUpperCase()}
                           </span>
                         </td>
-                        <td className="py-3 pr-4 font-mono text-gray-300 max-w-md truncate">
-                          {ioc.value}
+                        <td className="py-3 pr-4 font-mono text-foreground">
+                          <div className="flex items-center gap-1.5 max-w-md">
+                            <span className="truncate">{ioc.value}</span>
+                            <CopyButton value={ioc.value} className="shrink-0" />
+                          </div>
                         </td>
                         <td className="py-3 pr-4">
-                          {ioc.malicious === true && <span className="text-red-400">Yes</span>}
-                          {ioc.malicious === false && <span className="text-green-400">No</span>}
-                          {ioc.malicious === null && <span className="text-gray-500">-</span>}
+                          {ioc.malicious === true && <span className="text-red-400">{t("ioc.yes")}</span>}
+                          {ioc.malicious === false && <span className="text-green-400">{t("ioc.no")}</span>}
+                          {ioc.malicious === null && <span className="text-muted">-</span>}
                         </td>
-                        <td className="py-3 pr-4 text-xs text-gray-500 max-w-xs truncate">
+                        <td className="py-3 pr-4 text-xs text-muted max-w-xs truncate">
                           {ioc.context ?? ""}
                         </td>
                         <td className="py-3">
                           {pivotable && (
-                            <GitBranch className="w-4 h-4 text-gray-500 hover:text-primary-400" />
+                            <GitBranch className="w-4 h-4 text-muted hover:text-foreground" />
                           )}
                         </td>
                       </tr>
@@ -213,6 +224,7 @@ export default function IOCExtractor() {
 }
 
 function PivotDrawer({ ioc, onClose }: { ioc: IOC; onClose: () => void }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [result, setResult] = useState<PivotResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -228,7 +240,7 @@ function PivotDrawer({ ioc, onClose }: { ioc: IOC; onClose: () => void }) {
           setActiveTab(defaultTab(data.target_type));
         }
       } catch {
-        if (!cancelled) setError("Pivot failed.");
+        if (!cancelled) setError(t("ioc.pivotFailed"));
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -236,7 +248,7 @@ function PivotDrawer({ ioc, onClose }: { ioc: IOC; onClose: () => void }) {
     return () => {
       cancelled = true;
     };
-  }, [ioc.type, ioc.value]);
+  }, [ioc.type, ioc.value, t]);
 
   const tabs = result ? tabsFor(result.target_type, result.pivot) : [];
 
@@ -244,19 +256,19 @@ function PivotDrawer({ ioc, onClose }: { ioc: IOC; onClose: () => void }) {
     <div className="fixed inset-0 z-50 flex">
       <button
         type="button"
-        aria-label="Close panel"
+        aria-label={t("ioc.closePanel")}
         className="flex-1 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
       <div className="w-[40rem] max-w-full bg-dark-bg border-l border-dark-border overflow-y-auto">
         <div className="sticky top-0 bg-dark-bg border-b border-dark-border p-4 flex items-center justify-between z-10">
           <div>
-            <div className="text-xs text-gray-500 uppercase">{ioc.type}</div>
-            <div className="text-lg font-mono text-gray-200 break-all">{ioc.value}</div>
+            <div className="text-xs text-muted uppercase">{ioc.type}</div>
+            <div className="text-lg font-mono text-foreground break-all">{ioc.value}</div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-dark-card rounded-lg text-gray-400 hover:text-white"
+            className="p-2 hover:bg-dark-card rounded-lg text-muted hover:text-foreground"
           >
             <X className="w-5 h-5" />
           </button>
@@ -266,7 +278,7 @@ function PivotDrawer({ ioc, onClose }: { ioc: IOC; onClose: () => void }) {
           {loading && (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto" />
-              <p className="text-gray-400 mt-3 text-sm">Pivoting across OSINT sources...</p>
+              <p className="text-muted mt-3 text-sm">{t("ioc.pivoting")}</p>
             </div>
           )}
 
@@ -284,11 +296,11 @@ function PivotDrawer({ ioc, onClose }: { ioc: IOC; onClose: () => void }) {
 
           {result && !result.error && !loading && (
             <>
-              <div className="flex flex-wrap gap-3 text-xs text-gray-400 mb-4 pb-4 border-b border-dark-border">
+              <div className="flex flex-wrap gap-3 text-xs text-muted mb-4 pb-4 border-b border-dark-border">
                 {Object.entries(result.summary).map(([k, v]) => (
                   <div key={k}>
-                    <span className="text-gray-500">{k.replace(/_/g, " ")}:</span>{" "}
-                    <span className="text-gray-200 font-mono">{String(v || "-")}</span>
+                    <span className="text-muted">{k.replace(/_/g, " ")}:</span>{" "}
+                    <span className="text-foreground font-mono">{String(v || "-")}</span>
                   </div>
                 ))}
               </div>
@@ -300,8 +312,8 @@ function PivotDrawer({ ioc, onClose }: { ioc: IOC; onClose: () => void }) {
                     onClick={() => setActiveTab(tab.key)}
                     className={`px-3 py-2 text-xs font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
                       activeTab === tab.key
-                        ? "border-primary-500 text-primary-400"
-                        : "border-transparent text-gray-400 hover:text-white"
+                        ? "border-primary-500 text-foreground"
+                        : "border-transparent text-muted hover:text-foreground"
                     }`}
                   >
                     {tab.label}
