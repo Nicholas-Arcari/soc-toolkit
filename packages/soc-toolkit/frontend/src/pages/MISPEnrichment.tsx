@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Share2,
   AlertTriangle,
@@ -21,6 +22,7 @@ Domain: evil-update[.]xyz`;
  * investigating and which are novel.
  */
 export default function MISPEnrichment() {
+  const { t } = useTranslation();
   const [text, setText] = useState(SAMPLE_TEXT);
   const [result, setResult] = useState<MISPEnrichmentResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,7 @@ export default function MISPEnrichment() {
     setError(null);
     setResult(null);
     if (!text.trim()) {
-      setError("Paste a report or free-form text first.");
+      setError(t("misp.pasteFirst"));
       return;
     }
     setLoading(true);
@@ -38,7 +40,7 @@ export default function MISPEnrichment() {
       const data = await enrichWithMISP(text);
       setResult(data);
     } catch {
-      setError("Enrichment failed. Is the backend running?");
+      setError(t("misp.enrichError"));
     } finally {
       setLoading(false);
     }
@@ -53,12 +55,8 @@ export default function MISPEnrichment() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">MISP Enrichment</h1>
-        <p className="text-gray-400 mt-2">
-          Paste a threat report; the toolkit extracts IOCs and checks each one
-          against the configured MISP instance so novel indicators surface over
-          the ones already known to the community.
-        </p>
+        <h1 className="text-3xl font-bold">{t("misp.title")}</h1>
+        <p className="text-muted mt-2">{t("misp.subtitle")}</p>
       </div>
 
       <div className="bg-dark-card rounded-xl border border-dark-border p-6 space-y-4">
@@ -67,20 +65,18 @@ export default function MISPEnrichment() {
           onChange={(e) => setText(e.target.value)}
           rows={10}
           spellCheck={false}
-          placeholder="Paste report, incident summary, or free-form text here…"
+          placeholder={t("misp.placeholder")}
           className="w-full bg-dark-bg border border-dark-border rounded-lg px-4 py-3 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
         <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-500">
-            IOCs are extracted locally; only confirmed IOC values are sent to MISP.
-          </p>
+          <p className="text-xs text-muted">{t("misp.hint")}</p>
           <button
             onClick={runEnrich}
             disabled={loading}
-            className="px-4 py-2 bg-primary-600 hover:bg-primary-500 disabled:bg-gray-700 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+            className="px-4 py-2 bg-primary-600 hover:bg-primary-500 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium flex items-center gap-2"
           >
             <Share2 className="w-4 h-4" />
-            {loading ? "Enriching…" : "Extract + enrich"}
+            {loading ? t("misp.enriching") : t("misp.extractEnrich")}
           </button>
         </div>
         {error && (
@@ -97,30 +93,26 @@ export default function MISPEnrichment() {
             <div className="bg-amber-950/40 border border-amber-900/40 rounded-lg p-4 text-sm flex items-start gap-2">
               <Info className="w-4 h-4 text-amber-300 mt-0.5 shrink-0" />
               <div>
-                <strong className="text-amber-300">MISP is not configured.</strong>{" "}
-                <span className="text-amber-200/80">
-                  Set <span className="font-mono">MISP_URL</span> and{" "}
-                  <span className="font-mono">MISP_API_KEY</span> in your .env to see
-                  enrichment results. Extraction still works below.
-                </span>
+                <strong className="text-amber-300">{t("misp.notConfiguredTitle")}</strong>{" "}
+                <span className="text-amber-200/80">{t("misp.notConfiguredBody")}</span>
               </div>
             </div>
           )}
 
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-dark-card border border-dark-border rounded-lg p-4">
-              <p className="text-xs uppercase text-gray-500">Extracted</p>
+              <p className="text-xs uppercase text-muted">{t("misp.extracted")}</p>
               <p className="text-2xl font-bold mt-1">{result.extracted_count}</p>
             </div>
             <div className="bg-dark-card border border-dark-border rounded-lg p-4">
-              <p className="text-xs uppercase text-gray-500">Known to MISP</p>
+              <p className="text-xs uppercase text-muted">{t("misp.knownToMisp")}</p>
               <p className="text-2xl font-bold text-amber-400 mt-1">
                 {result.misp.known_count}
               </p>
             </div>
             <div className="bg-dark-card border border-dark-border rounded-lg p-4">
-              <p className="text-xs uppercase text-gray-500">Novel</p>
-              <p className="text-2xl font-bold text-primary-400 mt-1">
+              <p className="text-xs uppercase text-muted">{t("misp.novel")}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">
                 {Math.max(
                   0,
                   result.extracted_count - result.misp.known_count,
@@ -131,15 +123,15 @@ export default function MISPEnrichment() {
 
           {Object.keys(result.misp.summary).length > 0 && (
             <div className="bg-dark-card border border-dark-border rounded-xl p-6">
-              <h3 className="font-semibold mb-3">Coverage by kind</h3>
+              <h3 className="font-semibold mb-3">{t("misp.coverageByKind")}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                 {Object.entries(result.misp.summary).map(([kind, stats]) => (
                   <div
                     key={kind}
                     className="flex justify-between bg-dark-bg rounded-lg px-3 py-2"
                   >
-                    <span className="text-gray-300 font-mono">{kind}</span>
-                    <span className="text-gray-500">
+                    <span className="text-foreground font-mono">{kind}</span>
+                    <span className="text-muted">
                       {stats.known} / {stats.checked}
                     </span>
                   </div>
@@ -149,11 +141,9 @@ export default function MISPEnrichment() {
           )}
 
           <div className="bg-dark-card border border-dark-border rounded-xl p-6">
-            <h3 className="font-semibold mb-3">Extracted indicators</h3>
+            <h3 className="font-semibold mb-3">{t("misp.extractedIndicators")}</h3>
             {result.iocs.length === 0 && (
-              <p className="text-gray-500 text-sm">
-                No IOCs found in the provided text.
-              </p>
+              <p className="text-muted text-sm">{t("misp.noIocs")}</p>
             )}
             <div className="space-y-2">
               {result.iocs.map((ioc, i) => {
@@ -167,13 +157,13 @@ export default function MISPEnrichment() {
                   >
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-gray-400 shrink-0">
+                        <span className="text-xs font-mono px-2 py-0.5 rounded bg-dark-border text-muted shrink-0">
                           {ioc.type}
                         </span>
                         <span className="font-mono text-sm truncate">{ioc.value}</span>
                       </div>
                       {known && lookup?.events && lookup.events.length > 0 && (
-                        <ul className="mt-1 text-xs text-gray-400 space-y-0.5">
+                        <ul className="mt-1 text-xs text-muted space-y-0.5">
                           {lookup.events.slice(0, 3).map((ev, j) => (
                             <li key={j}>
                               <Radio className="inline w-3 h-3 mr-1 text-amber-400" />
@@ -187,16 +177,16 @@ export default function MISPEnrichment() {
                       )}
                     </div>
                     {unavailable ? (
-                      <span className="text-xs text-gray-600 shrink-0">-</span>
+                      <span className="text-xs text-muted shrink-0">-</span>
                     ) : known ? (
                       <span className="text-xs text-amber-400 flex items-center gap-1 shrink-0">
                         <CheckCircle className="w-3 h-3" />
-                        Known
+                        {t("misp.known")}
                       </span>
                     ) : (
-                      <span className="text-xs text-gray-500 flex items-center gap-1 shrink-0">
+                      <span className="text-xs text-muted flex items-center gap-1 shrink-0">
                         <XCircle className="w-3 h-3" />
-                        Novel
+                        {t("misp.novelTag")}
                       </span>
                     )}
                   </div>
