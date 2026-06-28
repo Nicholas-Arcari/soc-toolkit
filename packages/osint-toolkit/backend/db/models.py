@@ -20,6 +20,21 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
+class Investigation(Base):
+    """A saved OSINT investigation (person / fingerprint), kept for history."""
+
+    __tablename__ = "investigations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    query: Mapped[str] = mapped_column(String(512), default="")
+    summary: Mapped[str] = mapped_column(String(512), default="")
+    result: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now
+    )
+
+
 class Target(Base):
     """An authorized-to-scan perimeter.
 
