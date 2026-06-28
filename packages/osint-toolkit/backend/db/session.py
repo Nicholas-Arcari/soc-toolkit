@@ -35,3 +35,8 @@ async def get_session() -> AsyncIterator[AsyncSession]:
         except Exception:
             await session.rollback()
             raise
+
+
+def new_session() -> AsyncSession:
+    """A standalone session (not request-scoped) for background persistence."""
+    return _SessionFactory()
