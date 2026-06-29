@@ -50,7 +50,7 @@ export default function DisclaimerGate() {
             <span className="text-foreground font-medium">
               You are solely responsible for how you use this software.
             </span>{" "}
-            Any unlawful or unethical use is your responsibility alone — not
+            Any unlawful or unethical use is your responsibility alone - not
             the developer. The software is provided as-is, without warranty of
             any kind.
           </p>

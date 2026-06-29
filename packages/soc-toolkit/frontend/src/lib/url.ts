@@ -20,19 +20,19 @@ export function urlRiskFlags(rawUrl: string): string[] {
     const host = url.hostname.toLowerCase();
     if (url.protocol !== "https:") flags.push("Not HTTPS");
     if (SHORTENERS.has(host)) {
-      flags.push("URL shortener — hides the real destination");
+      flags.push("URL shortener - hides the real destination");
     }
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
       flags.push("IP address instead of a domain");
     }
     if (host.startsWith("xn--") || host.includes(".xn--")) {
-      flags.push("Punycode/IDN domain — possible look-alike");
+      flags.push("Punycode/IDN domain - possible look-alike");
     }
     if (url.username || url.password) {
       flags.push("Credentials embedded in the URL");
     }
     if ((rawUrl.match(/https?:\/\//gi) ?? []).length > 1) {
-      flags.push("Multiple URLs — possible redirect chain");
+      flags.push("Multiple URLs - possible redirect chain");
     }
   } catch {
     flags.push("Malformed URL");

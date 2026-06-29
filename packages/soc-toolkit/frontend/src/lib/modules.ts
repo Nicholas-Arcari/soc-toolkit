@@ -142,5 +142,5 @@ export const newsItem: ModuleMeta = {
   tint: "bg-sky-500/10",
 };
 
-/** Dashboard first, the tool modules, then News — the sidebar order. */
+/** Dashboard first, the tool modules, then News - the sidebar order. */
 export const navItems: ModuleMeta[] = [dashboardItem, ...modules, newsItem];

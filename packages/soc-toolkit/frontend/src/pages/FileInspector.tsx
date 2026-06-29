@@ -147,7 +147,7 @@ export default function FileInspector() {
               <Row label={t("file.detectedType")} value={report.detected_type} />
               <Row
                 label={t("file.extension")}
-                value={report.extension ? `.${report.extension}` : "—"}
+                value={report.extension ? `.${report.extension}` : "-"}
               />
               <Row label={t("file.size")} value={formatBytes(report.size)} />
               <Row

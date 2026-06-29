@@ -46,7 +46,7 @@ const en = {
     haveAccount: "Already have an account? ",
     newHere: "New here? ",
     signinShort: "Sign in",
-    createOne: "Create one — free trial",
+    createOne: "Create one - free trial",
   },
   gate: {
     verifyTitle: "Verify your email",
@@ -101,7 +101,7 @@ const it: typeof en = {
     haveAccount: "Hai già un account? ",
     newHere: "Nuovo qui? ",
     signinShort: "Accedi",
-    createOne: "Creane uno — prova gratuita",
+    createOne: "Creane uno - prova gratuita",
   },
   gate: {
     verifyTitle: "Verifica la tua email",

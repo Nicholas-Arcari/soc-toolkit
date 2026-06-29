@@ -11,7 +11,7 @@ describe("analyzeQrPayload", () => {
 
   it("flags shorteners, IP hosts and punycode look-alikes", () => {
     expect(analyzeQrPayload("https://bit.ly/abc").flags).toContain(
-      "URL shortener — hides the real destination",
+      "URL shortener - hides the real destination",
     );
     expect(analyzeQrPayload("https://1.2.3.4/x").flags).toContain(
       "IP address instead of a domain",

@@ -26,7 +26,7 @@ export function analyzeQrPayload(payload: string): QrAnalysis {
   if (kind === "url") {
     flags.push(...urlRiskFlags(payload));
   } else if (kind === "wifi") {
-    flags.push("Wi-Fi join code — connecting may expose you to a rogue network");
+    flags.push("Wi-Fi join code - connecting may expose you to a rogue network");
   }
 
   return { payload, kind, flags };

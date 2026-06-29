@@ -12,12 +12,12 @@ export const PAGE_HELP: Record<string, PageHelpEntry> = {
   "/": {
     title: "Welcome to SOC Toolkit",
     summary:
-      "Your blue-team workbench: triage suspicious emails, dig through logs, extract and pivot on indicators, and validate detections — all in one place. Open any page and tap the ? to see how it works.",
+      "Your blue-team workbench: triage suspicious emails, dig through logs, extract and pivot on indicators, and validate detections - all in one place. Open any page and tap the ? to see how it works.",
   },
   "/phishing": {
     title: "Phishing Analyzer",
     summary:
-      "Upload an email (.eml) to get an automated verdict with a 0–100 risk score.",
+      "Upload an email (.eml) to get an automated verdict with a 0-100 risk score.",
     steps: [
       "Drop or choose a .eml file.",
       "Read the verdict and risk score.",
@@ -31,7 +31,7 @@ export const PAGE_HELP: Record<string, PageHelpEntry> = {
     steps: [
       "Pick the log type (or leave Auto).",
       "Upload an auth.log, access.log or Windows export.",
-      "Work the alerts — each maps to MITRE ATT&CK and ranks top source IPs.",
+      "Work the alerts - each maps to MITRE ATT&CK and ranks top source IPs.",
     ],
   },
   "/ioc": {
@@ -47,7 +47,7 @@ export const PAGE_HELP: Record<string, PageHelpEntry> = {
   "/ioc-pivot": {
     title: "IOC Pivot",
     summary:
-      "Drill one IP or domain across passive sources — certificate transparency, passive DNS, WHOIS, ASN, Shodan — without touching the target.",
+      "Drill one IP or domain across passive sources - certificate transparency, passive DNS, WHOIS, ASN, Shodan - without touching the target.",
     steps: [
       "Enter an IP or domain.",
       "Explore the linked infrastructure across each source.",
@@ -82,7 +82,7 @@ export const PAGE_HELP: Record<string, PageHelpEntry> = {
   "/file": {
     title: "File Inspector",
     summary:
-      "Check a download or setup statically — it is never executed.",
+      "Check a download or setup statically - it is never executed.",
     steps: [
       "Upload any file (up to 100 MB).",
       "Read the verdict + risk score and the reasons behind it.",
@@ -122,7 +122,7 @@ export const PAGE_HELP: Record<string, PageHelpEntry> = {
   "/settings": {
     title: "API keys",
     summary:
-      "Bring your own keys to enable the enrichment integrations. They are stored only in your browser and sent with your own requests — never on the server.",
+      "Bring your own keys to enable the enrichment integrations. They are stored only in your browser and sent with your own requests - never on the server.",
   },
   "/contact": {
     title: "Contact the developer",

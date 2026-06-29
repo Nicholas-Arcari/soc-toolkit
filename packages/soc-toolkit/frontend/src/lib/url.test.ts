@@ -12,7 +12,7 @@ describe("urlRiskFlags", () => {
 
   it("flags URL shorteners", () => {
     expect(urlRiskFlags("https://bit.ly/abc")).toContain(
-      "URL shortener — hides the real destination",
+      "URL shortener - hides the real destination",
     );
   });
 
@@ -24,7 +24,7 @@ describe("urlRiskFlags", () => {
 
   it("flags punycode/IDN look-alikes", () => {
     expect(urlRiskFlags("https://xn--80ak6aa92e.com")).toContain(
-      "Punycode/IDN domain — possible look-alike",
+      "Punycode/IDN domain - possible look-alike",
     );
   });
 
@@ -40,7 +40,7 @@ describe("urlRiskFlags", () => {
 
   it("flags multiple embedded URLs as a redirect chain", () => {
     expect(urlRiskFlags("https://safe.com/r?u=https://evil.com")).toContain(
-      "Multiple URLs — possible redirect chain",
+      "Multiple URLs - possible redirect chain",
     );
   });
 });
