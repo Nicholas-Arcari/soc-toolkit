@@ -29,13 +29,13 @@ export default function Dashboard() {
           <Crosshair className="w-8 h-8 text-primary-500" />
           OSINT Toolkit
         </h1>
-        <p className="text-gray-400 mt-2">
+        <p className="text-muted mt-2">
           Attack surface management and investigative OSINT - passive by default.
         </p>
       </header>
 
       {error && (
-        <div className="bg-red-950/50 border border-red-900/50 rounded-lg p-4 flex items-center gap-3 text-red-300">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4 flex items-center gap-3 text-red-400">
           <AlertCircle className="w-5 h-5" />
           <span className="text-sm">{error}</span>
         </div>
@@ -76,7 +76,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-muted">
             No API keys configured. The toolkit runs in degraded mode - crt.sh
             (no key, passive) still works; SecurityTrails / Shodan sections
             stay empty.
@@ -95,18 +95,18 @@ export default function Dashboard() {
           </Link>
         </div>
         {targets.length === 0 ? (
-          <p className="text-sm text-gray-400">No targets yet.</p>
+          <p className="text-sm text-muted">No targets yet.</p>
         ) : (
           <ul className="divide-y divide-dark-border">
             {targets.slice(0, 5).map((t) => (
               <li key={t.id} className="py-2 flex justify-between">
                 <Link
                   to={`/targets/${t.id}`}
-                  className="text-sm text-white hover:text-primary-300"
+                  className="text-sm text-foreground hover:text-primary-300"
                 >
                   {t.name}
                 </Link>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted">
                   {t.scope_domains.join(", ")}
                 </span>
               </li>
@@ -131,12 +131,12 @@ function StatCard({
 }) {
   return (
     <div className="bg-dark-card border border-dark-border rounded-lg p-4">
-      <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="flex items-center gap-2 text-xs text-muted">
         {icon}
         {label}
       </div>
       <div className="text-2xl font-bold mt-1">{value}</div>
-      <div className="text-xs text-gray-500 mt-1">{hint}</div>
+      <div className="text-xs text-muted mt-1">{hint}</div>
     </div>
   );
 }
