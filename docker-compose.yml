@@ -68,6 +68,25 @@ services:
       - osint-backend
     restart: unless-stopped
 
+  # --- HTTPS reverse proxy ---------------------------------------------
+  # Fronts both stacks on custom domains over TLS. Routes by hostname (SNI):
+  # https://soctoolkit -> soc-frontend, https://osinttoolkit -> osint-frontend.
+  # Uses the nginx:alpine image already in the local cache (no registry pull)
+  # and the mkcert certs bind-mounted from ./certs. Rides the "all" profile.
+  reverse-proxy:
+    image: nginx:alpine
+    profiles: ["all"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./reverse-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/certs:ro
+    depends_on:
+      - soc-frontend
+      - osint-frontend
+    restart: unless-stopped
+
   # --- Postgres profile ------------------------------------------------
   # `docker compose --profile postgres up --build` swaps the OSINT backend
   # to an asyncpg URL. Mainly for installs that want proper concurrent

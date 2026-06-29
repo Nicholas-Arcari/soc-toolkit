@@ -22,6 +22,9 @@ env/
 # Environment variables
 .env
 
+# Local TLS certs (mkcert) - private keys, never commit
+certs/
+
 # Database
 *.db
 *.sqlite3

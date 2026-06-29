@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import {
+  ArrowLeftRight,
   Languages,
   LogOut,
   Shield,
@@ -25,7 +26,7 @@ export default function Sidebar() {
   const lang = i18n.resolvedLanguage === "it" ? "it" : "en";
 
   return (
-    <aside className="w-64 bg-card border-r border-border flex flex-col">
+    <aside className="w-[19rem] bg-card border-r border-border flex flex-col">
       <div className="p-6 border-b border-border flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Shield className="w-8 h-8 text-emerald-400" />
@@ -103,6 +104,20 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {/* Jump to the companion OSINT app. Points at the custom domain set up
+          via the local reverse proxy + /etc/hosts; change to http://localhost:3001 for a
+          plain-port dev setup. */}
+      <div className="px-4 pb-2">
+        <a
+          href="https://osinttoolkit/"
+          title="OSINT Toolkit"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:bg-foreground/5 hover:text-foreground transition-colors"
+        >
+          <ArrowLeftRight className="w-5 h-5 shrink-0 text-fuchsia-400" />
+          <span className="text-sm font-medium">OSINT Toolkit</span>
+        </a>
+      </div>
 
       {state && (
         <div className="p-4 border-t border-border space-y-2">
