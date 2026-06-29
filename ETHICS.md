@@ -76,6 +76,26 @@ are intentional: they exist so "I clicked the wrong button" cannot become "I DDo
 **Nothing here is a zero-day, C2, or exploitation framework.** The project ingests evidence and
 enriches indicators. It does not deliver payloads.
 
+**v1.0.2 investigative features stay within these lines.** A few capabilities added in this
+release are worth calling out explicitly:
+
+- **Person investigation** (`osint-toolkit`) correlates an email or name across *public* sources
+  only - Gravatar, MX/disposable-domain checks, derived username candidates checked against public
+  profile pages, and known-breach lookups (HIBP). The search-engine "dork" links it produces are
+  **links the operator clicks**, never auto-scraped. It surfaces no data the subject has not already
+  made public, applies data minimization, and the UI requires the operator to affirm a lawful basis
+  before running. Profiling a private individual you have no legitimate-interest basis to
+  investigate is exactly the "ex-partner's footprint" misuse this policy prohibits.
+- **Website fingerprinting** (`osint-toolkit`) is *active* reconnaissance - it sends HTTP requests
+  to the target to identify its software stack. It is therefore gated behind a per-request
+  **authorization acknowledgment** (the API refuses with `403` without it) and an SSRF guard that
+  rejects private, loopback, link-local, and reserved address ranges.
+- **Link and QR analysis** (`soc-toolkit`) is defensive: it inspects a suspicious URL or QR payload
+  on the analyst's behalf. The redirect tracer is SSRF-guarded and hop-bounded so the server cannot
+  be turned into an open scanning proxy.
+- **File inspection** (`soc-toolkit`) is fully static - it identifies type mismatches, embedded
+  IOCs, and macro/polyglot heuristics without ever executing the sample.
+
 ## Rules of engagement we expect contributors to honor
 
 1. **Scope discipline.** Do not submit features that make it easier to operate outside a defined
@@ -101,4 +121,4 @@ enriches indicators. It does not deliver payloads.
 ---
 
 *This policy applies to the current and all future versions of `sec-toolkit` unless explicitly
-superseded. Last reviewed: 2026-04-23.*
+superseded. Last reviewed: 2026-06-11.*
