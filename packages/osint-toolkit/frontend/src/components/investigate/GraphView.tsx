@@ -95,7 +95,7 @@ export default function GraphView({ graph, height = 480 }: Props) {
   if (graph.nodes.length === 0) {
     return (
       <div
-        className="flex items-center justify-center text-sm text-gray-500 bg-dark-card border border-dark-border rounded-lg"
+        className="flex items-center justify-center text-sm text-muted bg-dark-card border border-dark-border rounded-lg"
         style={{ height }}
       >
         No entities to plot.
