@@ -43,7 +43,7 @@ export default function FileUpload({
 
   return (
     <label
-      className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+      className={`flex flex-col items-center justify-center w-full max-w-xl mx-auto h-48 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
         isDragging
           ? "border-primary-500 bg-primary-500/10"
           : "border-dark-border hover:border-primary-500/50 bg-dark-card"
