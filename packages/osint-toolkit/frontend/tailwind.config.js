@@ -5,6 +5,22 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Theme-aware semantic tokens via CSS variables (src/index.css:
+        // :root = light, .dark = dark). RGB triplets so <alpha-value> works:
+        // bg-card, text-foreground, border-border, text-muted, bg-foreground/5.
+        background: "rgb(var(--bg) / <alpha-value>)",
+        foreground: "rgb(var(--fg) / <alpha-value>)",
+        card: "rgb(var(--card) / <alpha-value>)",
+        border: "rgb(var(--border) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        // Legacy aliases kept theme-aware so existing bg-dark-*/border-dark-*
+        // usages respond to light/dark with no edit.
+        dark: {
+          bg: "rgb(var(--bg) / <alpha-value>)",
+          card: "rgb(var(--card) / <alpha-value>)",
+          border: "rgb(var(--border) / <alpha-value>)",
+        },
+        // OSINT's teal accent (buttons, links, focus) over the neutral base.
         primary: {
           50: "#f0fdfa",
           100: "#ccfbf1",
@@ -17,11 +33,6 @@ export default {
           800: "#115e59",
           900: "#134e4a",
           950: "#042f2e",
-        },
-        dark: {
-          bg: "#0f172a",
-          card: "#1e293b",
-          border: "#334155",
         },
       },
     },
