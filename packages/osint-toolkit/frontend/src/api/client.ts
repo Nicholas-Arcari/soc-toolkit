@@ -318,4 +318,117 @@ export async function investigateImage(file: File): Promise<ImageMetadataRespons
   return response.data;
 }
 
+export interface GravatarProfile {
+  found: boolean;
+  avatar_url: string;
+  profile_url: string;
+  display_name: string;
+}
+
+export interface EmailHygiene {
+  email: string;
+  domain: string;
+  has_mx: boolean;
+  disposable: boolean;
+  role_account: boolean;
+}
+
+export interface DorkLink {
+  label: string;
+  url: string;
+}
+
+export interface PersonResponse {
+  email: string;
+  name: string;
+  org: string;
+  location: string;
+  gravatar: GravatarProfile | null;
+  email_hygiene: EmailHygiene | null;
+  username_candidates: string[];
+  username_result: {
+    username: string;
+    checked: number;
+    present_count: number;
+    hits: UsernameHit[];
+  } | null;
+  breaches: {
+    query: string;
+    kind: string;
+    available: boolean;
+    note?: string;
+    breaches: BreachRecord[];
+  } | null;
+  dorks: DorkLink[];
+  graph: EntityGraph;
+  note: string;
+}
+
+export interface PersonQuery {
+  email?: string;
+  name?: string;
+  org?: string;
+  location?: string;
+  handle?: string;
+}
+
+export async function investigatePerson(query: PersonQuery): Promise<PersonResponse> {
+  const response = await api.post<PersonResponse>("/investigate/person", query);
+  return response.data;
+}
+
+export interface Technology {
+  name: string;
+  category: string;
+  version: string;
+  evidence: string;
+}
+
+export interface FingerprintResponse {
+  url: string;
+  final_url: string;
+  status: number;
+  technologies: Technology[];
+  error: string;
+}
+
+export async function investigateFingerprint(
+  url: string,
+  authorized: boolean,
+): Promise<FingerprintResponse> {
+  const response = await api.post<FingerprintResponse>("/investigate/fingerprint", {
+    url,
+    authorized,
+  });
+  return response.data;
+}
+
+export async function exportReport(
+  data: Record<string, unknown>,
+  reportType: string,
+  format: string,
+): Promise<Blob> {
+  const response = await api.post(
+    "/reports/export",
+    { data, report_type: reportType, format },
+    { responseType: "blob" },
+  );
+  return response.data;
+}
+
+export interface InvestigationEntry {
+  id: number;
+  kind: string;
+  query: string;
+  summary: string;
+  created_at: string;
+}
+
+export async function getInvestigationHistory(): Promise<InvestigationEntry[]> {
+  const response = await api.get<{ investigations: InvestigationEntry[] }>(
+    "/investigate/history",
+  );
+  return response.data.investigations;
+}
+
 export default api;
