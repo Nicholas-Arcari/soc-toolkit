@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.14-slim
 
 # Mirror the host layout inside the container so the `../../sec-common/python`
 # path dependency in pyproject.toml resolves without patching the manifest.
