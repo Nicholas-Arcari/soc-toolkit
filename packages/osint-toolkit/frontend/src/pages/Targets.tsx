@@ -42,7 +42,7 @@ export default function Targets() {
             <TargetIcon className="w-6 h-6 text-primary-500" />
             {t("targets.heading")}
           </h1>
-          <p className="text-sm text-gray-400 mt-1">{t("targets.subheading")}</p>
+          <p className="text-sm text-muted mt-1">{t("targets.subheading")}</p>
         </div>
         <button
           onClick={() => setShowForm((v) => !v)}
@@ -54,7 +54,7 @@ export default function Targets() {
       </header>
 
       {error && (
-        <div className="bg-red-950/50 border border-red-900/50 rounded-lg p-3 text-sm text-red-300">
+        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">
           {error}
         </div>
       )}
@@ -71,12 +71,12 @@ export default function Targets() {
 
       <div className="bg-dark-card border border-dark-border rounded-lg overflow-hidden">
         {targets === null ? (
-          <p className="p-6 text-sm text-gray-400">{t("targets.loading")}</p>
+          <p className="p-6 text-sm text-muted">{t("targets.loading")}</p>
         ) : targets.length === 0 ? (
-          <p className="p-6 text-sm text-gray-400">{t("targets.empty")}</p>
+          <p className="p-6 text-sm text-muted">{t("targets.empty")}</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-dark-bg/50 text-xs text-gray-400 uppercase">
+            <thead className="bg-dark-bg/50 text-xs text-muted uppercase">
               <tr>
                 <th className="text-left px-4 py-3">{t("targets.columns.name")}</th>
                 <th className="text-left px-4 py-3">{t("targets.columns.scope")}</th>
@@ -91,22 +91,22 @@ export default function Targets() {
                   <td className="px-4 py-3">
                     <Link
                       to={`/targets/${tr.id}`}
-                      className="font-medium text-white hover:text-primary-300"
+                      className="font-medium text-foreground hover:text-primary-300"
                     >
                       {tr.name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-gray-300 font-mono text-xs">
+                  <td className="px-4 py-3 text-muted font-mono text-xs">
                     {tr.scope_domains.join(", ") || "-"}
                   </td>
-                  <td className="px-4 py-3 text-gray-400">{tr.owner_email || "-"}</td>
-                  <td className="px-4 py-3 text-gray-400 text-xs">
+                  <td className="px-4 py-3 text-muted">{tr.owner_email || "-"}</td>
+                  <td className="px-4 py-3 text-muted text-xs">
                     {new Date(tr.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDelete(tr.id)}
-                      className="text-gray-500 hover:text-red-400"
+                      className="text-muted hover:text-red-400"
                       aria-label={t("targets.deleteAria", { name: tr.name })}
                     >
                       <Trash2 className="w-4 h-4" />
@@ -203,14 +203,14 @@ function NewTargetForm({
         />
       </Field>
 
-      <label className="flex items-start gap-3 p-3 rounded-lg border border-amber-900/60 bg-amber-950/30 cursor-pointer">
+      <label className="flex items-start gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 cursor-pointer">
         <input
           type="checkbox"
           checked={authorized}
           onChange={(e) => setAuthorized(e.target.checked)}
           className="mt-0.5 w-4 h-4 accent-amber-400"
         />
-        <span className="text-xs text-amber-200 leading-relaxed">
+        <span className="text-xs text-amber-400 leading-relaxed">
           <strong className="block text-sm text-amber-100">
             {t("targets.form.authCheckbox.title")}
           </strong>
@@ -219,7 +219,7 @@ function NewTargetForm({
       </label>
 
       {error && (
-        <p className="text-sm text-red-300 bg-red-950/40 border border-red-900/40 rounded px-3 py-2">
+        <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded px-3 py-2">
           {error}
         </p>
       )}
@@ -228,14 +228,14 @@ function NewTargetForm({
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-sm text-gray-400 hover:text-white"
+          className="px-4 py-2 text-sm text-muted hover:text-foreground"
         >
           {t("targets.form.cancel")}
         </button>
         <button
           type="submit"
           disabled={submitting || !authorized}
-          className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-dark-border disabled:text-gray-500 px-4 py-2 rounded-lg text-sm font-medium"
+          className="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 disabled:bg-dark-border disabled:text-muted px-4 py-2 rounded-lg text-sm font-medium"
         >
           <CheckCircle2 className="w-4 h-4" />
           {submitting ? t("targets.form.submitting") : t("targets.form.submit")}
@@ -248,7 +248,7 @@ function NewTargetForm({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-wide text-gray-400">{label}</span>
+      <span className="text-xs uppercase tracking-wide text-muted">{label}</span>
       <div className="mt-1">{children}</div>
     </label>
   );
