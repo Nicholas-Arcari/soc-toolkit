@@ -4,6 +4,17 @@ FROM python:3.12-slim
 # path dependency in pyproject.toml resolves without patching the manifest.
 # Build context must be the monorepo root (see docker-compose.yml).
 
+# Install system dependencies for WeasyPrint (PDF report export). Without
+# these native libs (glib/pango/cairo) `import weasyprint` fails at startup
+# with "cannot load library 'libgobject-2.0-0'". Mirrors the soc-backend.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libgdk-pixbuf-2.0-0 \
+    libffi-dev \
+    libcairo2 \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir poetry==2.3.4
 
 # Copy sec-common first - infrequent changes, better layer cache.
