@@ -1,0 +1,26 @@
+title: Windows Service Installed
+id: e2b4f70a-win-service-persistence
+status: stable
+description: |
+  A new Windows service was installed (Event ID 7045 system log / 4697
+  security log). A classic persistence and privilege-escalation primitive -
+  PsExec, Cobalt Strike and many RATs register a service to survive reboot.
+  Correlate with the binary path and signer. MITRE ATT&CK T1543.003.
+references:
+  - https://attack.mitre.org/techniques/T1543/003/
+author: SOC Toolkit
+date: 2026/06/28
+logsource:
+    product: windows
+    service: security
+detection:
+    service_install:
+        event_id:
+            - 7045
+            - 4697
+    condition: service_install
+level: high
+tags:
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.t1543.003

@@ -1,0 +1,23 @@
+title: Windows Security Audit Log Cleared
+id: c5a9e1f8-win-audit-log-cleared
+status: stable
+description: |
+  The Windows Security event log was cleared (Event ID 1102). Legitimate on
+  rare maintenance windows, but routinely abused to destroy evidence after
+  hands-on-keyboard activity. Treat as high priority unless it maps to a
+  known administrative action. MITRE ATT&CK T1070.001.
+references:
+  - https://attack.mitre.org/techniques/T1070/001/
+author: SOC Toolkit
+date: 2026/06/28
+logsource:
+    product: windows
+    service: security
+detection:
+    cleared:
+        event_id: 1102
+    condition: cleared
+level: high
+tags:
+    - attack.defense_evasion
+    - attack.t1070.001

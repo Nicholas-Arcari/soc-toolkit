@@ -1,0 +1,35 @@
+title: Web Command Injection Attempt
+id: d3f8a154-web-command-injection
+status: stable
+description: |
+  Shell metacharacters and inline OS commands in the request URI. If the
+  parameter reaches a system()/exec() sink the attacker gets remote code
+  execution. High-signal when combined with a 200 response and unusual
+  response size. MITRE ATT&CK T1059.
+references:
+  - https://attack.mitre.org/techniques/T1059/
+  - https://owasp.org/www-community/attacks/Command_Injection
+author: SOC Toolkit
+date: 2026/06/28
+logsource:
+    category: webserver
+detection:
+    cmd_markers:
+        request_uri|contains:
+            - ";id"
+            - ";cat "
+            - ";uname"
+            - "|whoami"
+            - "|id"
+            - "$("
+            - "`id`"
+            - "/bin/bash"
+            - "/bin/sh"
+            - "wget%20"
+            - "curl%20"
+            - "nc%20-e"
+    condition: cmd_markers
+level: critical
+tags:
+    - attack.execution
+    - attack.t1059

@@ -1,0 +1,30 @@
+title: Web Path Traversal Attempt
+id: b6c2e019-web-path-traversal
+status: stable
+description: |
+  Directory-traversal sequences in the request URI aimed at escaping the web
+  root to read sensitive files (/etc/passwd, /etc/shadow, win.ini). Often the
+  reconnaissance step before local file inclusion or credential theft. Pair
+  with response-status analysis to separate probes from successful reads.
+references:
+  - https://attack.mitre.org/techniques/T1190/
+  - https://owasp.org/www-community/attacks/Path_Traversal
+author: SOC Toolkit
+date: 2026/06/28
+logsource:
+    category: webserver
+detection:
+    traversal:
+        request_uri|contains:
+            - "../"
+            - "..%2f"
+            - "..%5c"
+            - "/etc/passwd"
+            - "/etc/shadow"
+            - "win.ini"
+            - "/proc/self/environ"
+    condition: traversal
+level: high
+tags:
+    - attack.initial_access
+    - attack.t1190

@@ -1,0 +1,29 @@
+title: Log4Shell JNDI Injection Attempt
+id: a07d5b3c-web-log4shell-jndi
+status: stable
+description: |
+  JNDI lookup syntax (CVE-2021-44228, "Log4Shell") in the request URI. A
+  vulnerable Log4j instance resolves the lookup and fetches a remote class,
+  yielding RCE. The payload is frequently obfuscated, so this rule is a
+  triage hint - decode nested ${lower:}/${env:} wrappers before clearing.
+references:
+  - https://attack.mitre.org/techniques/T1190/
+  - https://nvd.nist.gov/vuln/detail/CVE-2021-44228
+author: SOC Toolkit
+date: 2026/06/28
+logsource:
+    category: webserver
+detection:
+    jndi:
+        request_uri|contains:
+            - "${jndi:"
+            - "jndi:ldap"
+            - "jndi:rmi"
+            - "jndi:dns"
+            - "jndi:nis"
+            - "jndi:iiop"
+    condition: jndi
+level: critical
+tags:
+    - attack.initial_access
+    - attack.t1190

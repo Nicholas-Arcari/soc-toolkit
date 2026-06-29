@@ -1,0 +1,29 @@
+title: SSH Root Login Accepted
+id: f4e1a7d2-ssh-root-login-accepted
+status: stable
+description: |
+  Interactive SSH session accepted directly for the root account. Direct
+  root logins should be disabled (PermitRootLogin no) on hardened hosts, so
+  an accepted root auth is either a misconfiguration or an attacker using
+  recovered credentials. MITRE ATT&CK T1021.004 / T1078.
+references:
+  - https://attack.mitre.org/techniques/T1021/004/
+  - https://attack.mitre.org/techniques/T1078/
+author: SOC Toolkit
+date: 2026/06/28
+logsource:
+    product: linux
+    service: ssh
+detection:
+    selection:
+        event_type: auth_success
+        username: root
+    condition: selection
+fields:
+    - source_ip
+    - username
+level: high
+tags:
+    - attack.lateral_movement
+    - attack.t1021.004
+    - attack.t1078
