@@ -94,6 +94,21 @@ Inspect the bundled rule library and evaluate JSON events (SSH, web, Windows) ag
 ### MISP Enrichment
 Paste threat-report text, extract IOCs, and flag which ones your MISP instance already knows. Degrades cleanly with a "MISP not configured" signal when no instance is reachable - every IOC still gets extracted, they're just not enriched.
 
+### File Inspector
+Static-only file analysis: magic-byte type detection with extension/content-mismatch flagging, polyglot and appended-data checks, embedded IOC + script-marker extraction, an OOXML VBA-macro heuristic, and VirusTotal/MalwareBazaar reputation - all **without ever executing the sample**.
+
+### Link Analyzer
+Trace where a suspicious URL really goes: follows redirects (hop-bounded) behind an SSRF guard that refuses private/loopback/reserved hosts, then scores the final destination with the shared phishing URL-risk engine.
+
+### QR Analyzer
+Decode a QR image entirely in the browser (nothing is uploaded), then run its payload through the same URL-risk checks as the Link Analyzer - catching the "scan-to-phish" vector before a click.
+
+### OSINT investigation (osint-toolkit)
+The companion `osint-toolkit` adds **person investigation** (correlate an email or name across public sources - Gravatar, breach lookups, derived usernames, search dorks) and **website tech-fingerprinting** (identify a site's CMS/framework/server stack). Both are bound by [`ETHICS.md`](ETHICS.md): person search requires affirming a lawful basis, and fingerprinting is active recon gated behind a per-request authorization acknowledgment.
+
+### Accounts & licensing
+Auth is optional and off by default - a self-hosted clone runs unauthenticated on a trusted network. Set `AUTH_SECRET` to enable per-user accounts (JWT, profiles, avatars, XP/levels). Two registration modes: **single-tenant** (first signup becomes admin, later signups are rejected - the right call for a clone) and **saas** (self-service registration with email verification + a 7-day trial). Paid plans are validated by a separate, self-hosted **license-server** - the "doppio binario" model that keeps the open-source build free and unlimited while letting the hosted instance offer trials and licenses.
+
 ## Architecture
 
 ```
