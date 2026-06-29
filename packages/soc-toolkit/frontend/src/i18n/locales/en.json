@@ -27,9 +27,9 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "SOC Toolkit — Security Operations Center",
+    "subtitle": "SOC Toolkit - Security Operations Center",
     "systemStatus": "System Status",
-    "backendDown": "Backend unreachable — start the server with `uvicorn api.app:app`",
+    "backendDown": "Backend unreachable - start the server with `uvicorn api.app:app`",
     "backendOnline": "Backend online (v{{version}})",
     "checking": "Checking…",
     "recentActivity": "Recent activity",
@@ -48,18 +48,21 @@
     "messagePlaceholder": "What happened, steps to reproduce, and what you expected…",
     "openInEmail": "Open in email",
     "preferDirect": "Prefer email directly?",
-    "defaultSubject": "SOC Toolkit — bug / service issue"
+    "defaultSubject": "SOC Toolkit - bug / service issue"
   },
   "news": {
     "title": "Security News",
     "subtitle": "Latest from curated threat-intel feeds.",
     "refresh": "Refresh",
-    "error": "Could not load news — the backend may be offline or the feeds unreachable.",
+    "error": "Could not load news - the backend may be offline or the feeds unreachable.",
     "loading": "Loading…",
     "empty": "No news right now.",
     "minutesAgo": "{{n}}m ago",
     "hoursAgo": "{{n}}h ago",
-    "daysAgo": "{{n}}d ago"
+    "daysAgo": "{{n}}d ago",
+    "searchPlaceholder": "Search by title or topic…",
+    "allSources": "All sources",
+    "noMatch": "No news matches your search."
   },
   "qr": {
     "title": "QR Analyzer",
@@ -79,7 +82,7 @@
   },
   "link": {
     "title": "Link Analyzer",
-    "subtitle": "Unshorten a link and follow its redirects to see where it really lands — before you click it.",
+    "subtitle": "Unshorten a link and follow its redirects to see where it really lands - before you click it.",
     "placeholder": "https://bit.ly/…",
     "analyze": "Analyze",
     "error": "Could not analyze that link. Check the URL and that the backend is running.",
@@ -92,7 +95,7 @@
     "copyFinalUrl": "Copy final URL",
     "riskFlags": "Risk flags",
     "bulkTitle": "Bulk triage",
-    "bulkSubtitle": "Paste multiple URLs (one per line) for an instant client-side risk-flag check — nothing is sent to the server.",
+    "bulkSubtitle": "Paste multiple URLs (one per line) for an instant client-side risk-flag check - nothing is sent to the server.",
     "triageButton": "Triage URLs",
     "colUrl": "URL",
     "colFlags": "Risk flags",
@@ -104,9 +107,9 @@
   },
   "file": {
     "title": "File Inspector",
-    "subtitle": "Static check of a download or setup — type mismatches, polyglots, embedded payloads, macros and hash reputation. The file is never run.",
+    "subtitle": "Static check of a download or setup - type mismatches, polyglots, embedded payloads, macros and hash reputation. The file is never run.",
     "uploadLabel": "Upload a file to inspect",
-    "uploadDescription": "Any file up to 100 MB — analyzed statically, never executed",
+    "uploadDescription": "Any file up to 100 MB - analyzed statically, never executed",
     "inspecting": "Inspecting…",
     "error": "Inspection failed. Make sure the backend is running.",
     "riskScore": "risk score",
@@ -142,7 +145,7 @@
     "recommendations": "Recommendations",
     "inbox": {
       "title": "Live inbox triage",
-      "subtitle": "Pull recent messages from a mailbox over IMAPS and analyze each. Credentials are used only for this request and never stored — use an app password.",
+      "subtitle": "Pull recent messages from a mailbox over IMAPS and analyze each. Credentials are used only for this request and never stored - use an app password.",
       "host": "IMAP host (e.g. imap.gmail.com)",
       "username": "Email / username",
       "password": "App password",
@@ -265,7 +268,7 @@
   "settings": {
     "title": "Settings",
     "subtitle": "Bring your own API keys to enable the enrichment integrations.",
-    "info": "Keys are stored only in your browser and sent with your own requests — never saved on the server. Self-hosted installs can set them in the server's .env instead.",
+    "info": "Keys are stored only in your browser and sent with your own requests - never saved on the server. Self-hosted installs can set them in the server's .env instead.",
     "active": "active",
     "getKey": "Get a key",
     "placeholder": "Paste your API key",

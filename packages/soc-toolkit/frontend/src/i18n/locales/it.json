@@ -27,9 +27,9 @@
   },
   "dashboard": {
     "title": "Cruscotto",
-    "subtitle": "SOC Toolkit — Centro Operativo di Sicurezza",
+    "subtitle": "SOC Toolkit - Centro Operativo di Sicurezza",
     "systemStatus": "Stato del sistema",
-    "backendDown": "Backend irraggiungibile — avvia il server con `uvicorn api.app:app`",
+    "backendDown": "Backend irraggiungibile - avvia il server con `uvicorn api.app:app`",
     "backendOnline": "Backend attivo (v{{version}})",
     "checking": "Controllo…",
     "recentActivity": "Attività recente",
@@ -48,18 +48,21 @@
     "messagePlaceholder": "Cos'è successo, i passi per riprodurlo e cosa ti aspettavi…",
     "openInEmail": "Apri nell'email",
     "preferDirect": "Preferisci scrivere direttamente?",
-    "defaultSubject": "SOC Toolkit — bug / problema servizio"
+    "defaultSubject": "SOC Toolkit - bug / problema servizio"
   },
   "news": {
     "title": "Notizie di sicurezza",
     "subtitle": "Le ultime dai feed di threat-intel selezionati.",
     "refresh": "Aggiorna",
-    "error": "Impossibile caricare le notizie — il backend potrebbe essere offline o i feed irraggiungibili.",
+    "error": "Impossibile caricare le notizie - il backend potrebbe essere offline o i feed irraggiungibili.",
     "loading": "Caricamento…",
     "empty": "Nessuna notizia al momento.",
     "minutesAgo": "{{n}} min fa",
     "hoursAgo": "{{n}} h fa",
-    "daysAgo": "{{n}} g fa"
+    "daysAgo": "{{n}} g fa",
+    "searchPlaceholder": "Cerca per titolo o argomento…",
+    "allSources": "Tutte le fonti",
+    "noMatch": "Nessuna notizia corrisponde alla ricerca."
   },
   "qr": {
     "title": "Analizzatore QR",
@@ -79,7 +82,7 @@
   },
   "link": {
     "title": "Analizzatore Link",
-    "subtitle": "Espandi un link accorciato e segui i redirect per vedere dove porta davvero — prima di cliccarlo.",
+    "subtitle": "Espandi un link accorciato e segui i redirect per vedere dove porta davvero - prima di cliccarlo.",
     "placeholder": "https://bit.ly/…",
     "analyze": "Analizza",
     "error": "Impossibile analizzare il link. Controlla l'URL e che il backend sia in esecuzione.",
@@ -92,7 +95,7 @@
     "copyFinalUrl": "Copia URL finale",
     "riskFlags": "Segnali di rischio",
     "bulkTitle": "Triage in blocco",
-    "bulkSubtitle": "Incolla più URL (uno per riga) per un controllo istantaneo dei flag di rischio lato client — non viene inviato nulla al server.",
+    "bulkSubtitle": "Incolla più URL (uno per riga) per un controllo istantaneo dei flag di rischio lato client - non viene inviato nulla al server.",
     "triageButton": "Analizza URL",
     "colUrl": "URL",
     "colFlags": "Segnali di rischio",
@@ -104,9 +107,9 @@
   },
   "file": {
     "title": "Ispettore File",
-    "subtitle": "Controllo statico di un download o installer — tipo non corrispondente, polyglot, payload incorporati, macro e reputazione hash. Il file non viene mai eseguito.",
+    "subtitle": "Controllo statico di un download o installer - tipo non corrispondente, polyglot, payload incorporati, macro e reputazione hash. Il file non viene mai eseguito.",
     "uploadLabel": "Carica un file da ispezionare",
-    "uploadDescription": "Qualsiasi file fino a 100 MB — analizzato staticamente, mai eseguito",
+    "uploadDescription": "Qualsiasi file fino a 100 MB - analizzato staticamente, mai eseguito",
     "inspecting": "Ispezione…",
     "error": "Ispezione fallita. Assicurati che il backend sia in esecuzione.",
     "riskScore": "punteggio di rischio",
@@ -142,7 +145,7 @@
     "recommendations": "Raccomandazioni",
     "inbox": {
       "title": "Triage inbox in tempo reale",
-      "subtitle": "Pesca i messaggi recenti da una casella via IMAPS e analizza ciascuno. Le credenziali sono usate solo per questa richiesta e mai salvate — usa una password per app.",
+      "subtitle": "Pesca i messaggi recenti da una casella via IMAPS e analizza ciascuno. Le credenziali sono usate solo per questa richiesta e mai salvate - usa una password per app.",
       "host": "Host IMAP (es. imap.gmail.com)",
       "username": "Email / nome utente",
       "password": "Password per app",
@@ -265,7 +268,7 @@
   "settings": {
     "title": "Impostazioni",
     "subtitle": "Usa le tue chiavi API per abilitare le integrazioni di arricchimento.",
-    "info": "Le chiavi sono salvate solo nel tuo browser e inviate con le tue richieste — mai memorizzate sul server. Le installazioni self-hosted possono invece impostarle nel file .env del server.",
+    "info": "Le chiavi sono salvate solo nel tuo browser e inviate con le tue richieste - mai memorizzate sul server. Le installazioni self-hosted possono invece impostarle nel file .env del server.",
     "active": "attiva",
     "getKey": "Ottieni una chiave",
     "placeholder": "Incolla la tua chiave API",
