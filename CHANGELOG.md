@@ -29,6 +29,38 @@ this project adheres to [Semantic Versioning](https://semver.org/).
   provenance attestation, and attach a buildx SBOM attestation
   alongside the existing SPDX release asset. Verification recipes
   in `SECURITY.md`.
+- **Neutral light/dark theme.** Black/grey/white surfaces via CSS
+  variables + a shared `ThemeProvider` (system preference by default,
+  persisted toggle); colour now comes from per-category icons. Applied
+  across both toolkits.
+- **Accounts, profiles & gamification.** Profile page with avatar
+  upload, a responsibility disclaimer gate, and server-authoritative
+  XP/levels awarded as analyses run.
+- **Dual-mode auth + SaaS hardening.** `single-tenant` (admin-only)
+  vs `saas` (self-registration). SaaS adds email verification with a
+  unique-email/one-trial anti-abuse rule, password reset, a 7-day
+  trial, and a per-username login throttle. Verification/reset email
+  is delivered via a pluggable `EmailSender` (console in dev, SMTP in
+  prod - no new dependency).
+- **SQLite-backed user store.** The auth store moved from a flat JSON
+  file to stdlib `sqlite3` (WAL) so multiple workers can share it
+  without losing concurrent writes; a legacy `users.json` is imported
+  once on first start. Same public API, no call-site changes.
+- **License-server ("doppio binario").** A separate, self-hosted
+  service issues and validates licenses; the SaaS instance redeems a
+  key in-app and re-validates it at login, downgrading a revoked or
+  expired plan. The open-source build stays free and unlimited.
+- **Detection tools (soc-toolkit).** File Inspector (static type/
+  polyglot/macro analysis), Link Analyzer (SSRF-guarded redirect
+  tracing), and QR Analyzer (in-browser decode + URL-risk scoring).
+- **OSINT investigation (osint-toolkit).** Person investigation
+  (public-source correlation: Gravatar, breaches, derived usernames,
+  search dorks) and website tech-fingerprinting (authorization-gated
+  active recon). Both framed by `ETHICS.md`.
+- **Platform polish.** Security news feed (stdlib RSS, cached),
+  contextual in-app guides, a contact page, in-UI per-request API-key
+  entry (keys never persisted server-side), and improved IOC pivoting
+  (crt.sh SANs + OTX passive DNS).
 
 ## [0.1.0] - 2026-04-22
 
