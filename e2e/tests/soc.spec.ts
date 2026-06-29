@@ -30,9 +30,38 @@ test.describe("SOC toolkit smoke", () => {
       "IOC Pivot",
       "YARA Scanner",
       "Sigma Detection",
+      "File Inspector",
+      "Link Analyzer",
+      "QR Analyzer",
     ]) {
       await expect(nav.getByRole("link", { name: label })).toBeVisible();
     }
+  });
+
+  test("new detection tools render", async ({ page }) => {
+    for (const [path, heading] of [
+      ["/file", "File Inspector"],
+      ["/link", "Link Analyzer"],
+      ["/qr", "QR Analyzer"],
+    ] as const) {
+      await page.goto(path);
+      await expect(
+        page.getByRole("heading", { name: heading, exact: true }),
+      ).toBeVisible();
+    }
+  });
+
+  test("link analyzer bulk triage flags risky URLs (no backend)", async ({
+    page,
+  }) => {
+    await page.goto("/link");
+    await page
+      .getByPlaceholder(/https:\/\/bit\.ly/)
+      .fill("https://bit.ly/x\nhttp://192.168.0.1/login");
+    await page.getByRole("button", { name: "Triage URLs" }).click();
+    await expect(
+      page.getByText("URL shortener - hides the real destination"),
+    ).toBeVisible();
   });
 
   test("upload phishing sample, get a verdict", async ({ page }) => {
