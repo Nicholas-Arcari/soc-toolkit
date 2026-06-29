@@ -1,6 +1,7 @@
 import i18n from "i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import { initReactI18next } from "react-i18next";
+import { registerCommonI18n } from "@sec-toolkit/common/i18n";
 
 import en from "./locales/en.json";
 import it from "./locales/it.json";
@@ -25,5 +26,8 @@ void i18n
       lookupLocalStorage: "osint-toolkit-lang",
     },
   });
+
+// Graft the shared auth (login + gates) translations onto this instance.
+registerCommonI18n(i18n);
 
 export default i18n;
